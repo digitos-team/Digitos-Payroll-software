@@ -1,0 +1,13 @@
+Name,Email,Phone,Role,Employee Code,Department,Designation,Office Branch,Bank Name,Account Holder,Account Number,IFSC Code,Bank Branch
+Riya Deshmukh,riya.deshmukh@company.com,9876501234,CA,EmP002,,,,ICICI Bank,Riya Deshmukh,223400876543,ICIC0000456,Pune Camp
+Sahil Patil,sahil.patil@company.com,9876512345,HR,EmP003,,,,State Bank of India,Sahil Patil,323400765432,SBIN0000765,Thane West
+Priya Kulkarni,priya.kulkarni@company.com,9876523456,Employee,EmP004,BPO,Customer Service Executive,,Axis Bank,Priya Kulkarni,423400654321,UTIB0000123,Pune Hinjewadi
+Amit Ghosh,amit.ghosh@company.com,9876556789,Employee,EmP007,Backend,Database Administrator,,State Bank of India,Amit Ghosh,723400321098,SBIN0000321,Kolkata Park Street
+Deepika Rane,deepika.rane@company.com,9876567890,Employee,EmP008,IT Department,Software Engineer,,Kotak Mahindra Bank,Deepika Rane,823400210987,KKBK0000768,Nagpur Civil Lines
+priyanka patthe,priyanka@gmail.com,8080419573,HR,HR123,,,,HDFC Bank,priyanka patte,123456789012,HDFC0001234,Mumbai
+irfan,irfan@gmail.com,8080419573,CA,CA123,,,,HDFC Bank,Irfan,123456789012,HDFC0001234,Mumbai
+Aniket,aniket@gmail.com,1234567890,Employee,EMP303,Backend,Software Engineer,,IDBI,Aniket Dhangar,1234567890,JAL0123,Jalgaon
+vallabh tripathi,vallabh@gmail.com,1234567890,Employee,EMP101,Backend,Software Engineer,,IDBI,Vallabh tripathi,123456789012,JALG12041,Jalgoan
+Nilesh Jhadav,nilesh@gmail.com,1234567890,Employee,DIS00101,IT Department,Database Administrator,,ICICI,Nilesh Jhadav,123456789012,AWB123451,Aurangabad
+jay,jay@gmail.com,01234567890,Employee,DIS00102,IT Department,Database Administrator,,Axis,jay jhadav,123456789023,DHSW12344S,Jalgaon
+Pradyumna,pradyumn@gmail.com,+919145432406,Employee,DIS00103,Backend,Database Administrator,,,,,,
