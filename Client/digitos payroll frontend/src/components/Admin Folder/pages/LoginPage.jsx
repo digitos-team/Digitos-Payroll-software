@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 import { loginSuccess } from "../../redux/loginSlice";
 
 import loginImage from "../../../assets/login_image.jpeg";
+import logo from "../../../assets/Black Text Logo.jpeg";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -93,6 +94,13 @@ export default function Login() {
 
           {/* Login Form */}
           <div className="w-full lg:w-1/2 flex flex-col justify-center p-8 sm:p-10 lg:p-12">
+            <div className="mb-6">
+              <img
+                src={logo}
+                alt="Company Logo"
+                className="h-16 w-auto object-contain"
+              />
+            </div>
             <h3 className="text-3xl font-bold text-gray-800 mb-2">
               Hello, Welcome Back
             </h3>
