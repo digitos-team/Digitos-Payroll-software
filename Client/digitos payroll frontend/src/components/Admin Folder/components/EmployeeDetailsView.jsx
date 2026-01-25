@@ -47,7 +47,7 @@ const EmployeeDetailsView = ({ employee, onClose }) => {
                     <div>
                         <h2 className="text-2xl font-bold">{employee.Name}</h2>
                         <p className="opacity-90 flex items-center gap-2 text-sm mt-1">
-                            {employee.role} • {typeof employee.BranchId === 'object' ? employee.BranchId?.BranchName : 'Unknown Branch'}
+                            {employee.role} • {employee.EmployeeType || 'N/A'} • {typeof employee.BranchId === 'object' ? employee.BranchId?.BranchName : 'Unknown Branch'}
                         </p>
                         <div className="flex gap-2 mt-3">
                             <span className="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-md">
@@ -67,7 +67,7 @@ const EmployeeDetailsView = ({ employee, onClose }) => {
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-8 bg-gray-50 dark:bg-gray-900 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-8 bg-gray-50 dark:bg-gray-900 custom-scrollbar scroll-smooth">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                     {/* Personal Info */}
@@ -106,6 +106,7 @@ const EmployeeDetailsView = ({ employee, onClose }) => {
                                 label="Designation"
                                 value={typeof employee.DesignationId === 'object' ? employee.DesignationId?.DesignationName : 'N/A'}
                             />
+                            <DetailRow label="Employee Type" value={employee.EmployeeType} />
                             <DetailRow label="Salary Status" value={<StatusBadge value="Active" />} />
                         </div>
                     </div>

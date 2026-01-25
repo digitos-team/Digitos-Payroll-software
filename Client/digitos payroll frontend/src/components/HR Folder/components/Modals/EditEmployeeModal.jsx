@@ -43,10 +43,11 @@ export default function EditEmployeeModal({ open, onClose, onUpdate, employee })
         DepartmentId: "",
         DesignationId: "",
         BranchId: "",
+        EmployeeType: "",
         EmployeeCode: "",
         JoiningDate: "",
         DateOfBirth: "",
-        AdhaarNumber: "", // FIXED: Single 'a' to match schema
+        AdhaarNumber: "",
         PANNumber: "",
         BankDetails: {
             BankName: "",
@@ -58,7 +59,7 @@ export default function EditEmployeeModal({ open, onClose, onUpdate, employee })
         ProfilePhoto: null,
         Documents: {
             BankPassbook: null,
-            AdhaarCard: null, // FIXED: Single 'a' to match schema
+            AdhaarCard: null,
             PANCard: null,
             Marksheets: [],
             OtherDocuments: [],
@@ -67,7 +68,6 @@ export default function EditEmployeeModal({ open, onClose, onUpdate, employee })
 
     const [showPassword, setShowPassword] = useState(false);
 
-    // Populate form when employee prop changes
     useEffect(() => {
         if (employee) {
             setForm({
@@ -79,6 +79,7 @@ export default function EditEmployeeModal({ open, onClose, onUpdate, employee })
                 DepartmentId: employee.DepartmentId?._id || employee.DepartmentId || "",
                 DesignationId: employee.DesignationId?._id || employee.DesignationId || "",
                 BranchId: employee.BranchId?._id || employee.BranchId || "",
+                EmployeeType: employee.EmployeeType || "",
                 EmployeeCode: employee.EmployeeCode || "",
                 JoiningDate: employee.JoiningDate ? employee.JoiningDate.split('T')[0] : "",
                 DateOfBirth: employee.DateOfBirth ? employee.DateOfBirth.split('T')[0] : "",
@@ -119,29 +120,25 @@ export default function EditEmployeeModal({ open, onClose, onUpdate, employee })
     const submit = (e) => {
         e.preventDefault();
 
-        // CRITICAL FIX: Convert to FormData for file uploads
         const formData = new FormData();
 
-        // Add only fields that have values
         if (form.Name) formData.append("Name", form.Name);
         if (form.Email) formData.append("Email", form.Email);
         if (form.Phone) formData.append("Phone", form.Phone);
         if (form.Password) formData.append("Password", form.Password);
         if (form.role) formData.append("role", form.role);
 
-        // Optional fields
         if (form.DepartmentId) formData.append("DepartmentId", form.DepartmentId);
         if (form.DesignationId) formData.append("DesignationId", form.DesignationId);
         if (form.BranchId) formData.append("BranchId", form.BranchId);
+        if (form.EmployeeType) formData.append("EmployeeType", form.EmployeeType);
         if (form.EmployeeCode) formData.append("EmployeeCode", form.EmployeeCode);
         if (form.JoiningDate) formData.append("JoiningDate", form.JoiningDate);
         if (form.DateOfBirth) formData.append("DateOfBirth", form.DateOfBirth);
 
-        // FIXED: Use AdhaarNumber (single 'a') to match schema
         if (form.AdhaarNumber) formData.append("AdhaarNumber", form.AdhaarNumber);
         if (form.PANNumber) formData.append("PANNumber", form.PANNumber);
 
-        // Add Bank Details
         if (form.BankDetails.BankName)
             formData.append("BankDetails[BankName]", form.BankDetails.BankName);
         if (form.BankDetails.AccountHolderName)
@@ -153,12 +150,10 @@ export default function EditEmployeeModal({ open, onClose, onUpdate, employee })
         if (form.BankDetails.BranchName)
             formData.append("BankDetails[BranchName]", form.BankDetails.BranchName);
 
-        // Add Profile Photo
         if (form.ProfilePhoto) {
             formData.append("ProfilePhoto", form.ProfilePhoto);
         }
 
-        // CRITICAL FIX: Backend route expects "AadhaarCard" but schema uses "AdhaarCard"
         if (form.Documents.BankPassbook) {
             formData.append("BankPassbook", form.Documents.BankPassbook);
         }
@@ -169,28 +164,16 @@ export default function EditEmployeeModal({ open, onClose, onUpdate, employee })
             formData.append("PANCard", form.Documents.PANCard);
         }
 
-        // MULTIPLE MARKSHEETS
         if (form.Documents.Marksheets && form.Documents.Marksheets.length > 0) {
-            console.log(`Appending ${form.Documents.Marksheets.length} marksheet(s)`);
-            form.Documents.Marksheets.forEach((file, index) => {
+            form.Documents.Marksheets.forEach((file) => {
                 formData.append("Marksheets", file);
-                console.log(`  - Marksheet ${index + 1}: ${file.name}`);
             });
         }
 
-        // MULTIPLE OTHER DOCUMENTS
         if (form.Documents.OtherDocuments && form.Documents.OtherDocuments.length > 0) {
-            console.log(`Appending ${form.Documents.OtherDocuments.length} other document(s)`);
-            form.Documents.OtherDocuments.forEach((file, index) => {
+            form.Documents.OtherDocuments.forEach((file) => {
                 formData.append("OtherDocuments", file);
-                console.log(`  - Other Document ${index + 1}: ${file.name}`);
             });
-        }
-
-        // Log FormData contents for debugging
-        console.log("Update FormData contents:");
-        for (let pair of formData.entries()) {
-            console.log(pair[0], pair[1]);
         }
 
         onUpdate(employee._id, formData);
@@ -355,11 +338,27 @@ export default function EditEmployeeModal({ open, onClose, onUpdate, employee })
                             </div>
 
                             <div>
+                                <label className="text-sm font-medium">Employee Type</label>
+                                <select
+                                    value={form.EmployeeType}
+                                    onChange={(e) => updateField("EmployeeType", e.target.value)}
+                                    className="w-full border rounded px-3 py-2 mt-1"
+                                >
+                                    <option value="">Select Type</option>
+                                    <option value="Intern">Intern</option>
+                                    <option value="Permanent">Permanent</option>
+                                    <option value="Contract Base">Contract Base</option>
+                                    <option value="Others">Others</option>
+                                </select>
+                            </div>
+
+                            <div>
                                 <label className="text-sm font-medium">Employee Code</label>
                                 <input
                                     value={form.EmployeeCode}
                                     onChange={(e) => updateField("EmployeeCode", e.target.value)}
-                                    className="w-full border rounded px-3 py-2 mt-1"
+                                    className="w-full border rounded px-3 py-2 mt-1 bg-gray-100 cursor-not-allowed"
+                                    readOnly
                                 />
                             </div>
 
@@ -447,12 +446,6 @@ export default function EditEmployeeModal({ open, onClose, onUpdate, employee })
                                     }
                                     className="w-full mt-1"
                                 />
-                                {form.Documents.BankPassbook && (
-                                    <p className="text-xs text-green-600 mt-1">
-                                        ✓ {form.Documents.BankPassbook.name}
-                                    </p>
-                                )}
-                                <p className="text-xs text-gray-500 mt-1">Upload new to replace</p>
                             </div>
                             <div>
                                 <label className="text-sm font-medium">Aadhaar Card</label>
@@ -470,12 +463,6 @@ export default function EditEmployeeModal({ open, onClose, onUpdate, employee })
                                     }
                                     className="w-full mt-1"
                                 />
-                                {form.Documents.AdhaarCard && (
-                                    <p className="text-xs text-green-600 mt-1">
-                                        ✓ {form.Documents.AdhaarCard.name}
-                                    </p>
-                                )}
-                                <p className="text-xs text-gray-500 mt-1">Upload new to replace</p>
                             </div>
                             <div>
                                 <label className="text-sm font-medium">PAN Card</label>
@@ -493,109 +480,10 @@ export default function EditEmployeeModal({ open, onClose, onUpdate, employee })
                                     }
                                     className="w-full mt-1"
                                 />
-                                {form.Documents.PANCard && (
-                                    <p className="text-xs text-green-600 mt-1">
-                                        ✓ {form.Documents.PANCard.name}
-                                    </p>
-                                )}
-                                <p className="text-xs text-gray-500 mt-1">Upload new to replace</p>
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium">Marksheets (Multiple)</label>
-                                <input
-                                    type="file"
-                                    accept=".pdf,.jpg,.jpeg,.png"
-                                    multiple
-                                    onChange={(e) => {
-                                        const newFiles = Array.from(e.target.files);
-                                        setForm((prev) => ({
-                                            ...prev,
-                                            Documents: {
-                                                ...prev.Documents,
-                                                Marksheets: [...prev.Documents.Marksheets, ...newFiles],
-                                            },
-                                        }));
-                                        e.target.value = ''; // Clear input for reuse
-                                    }}
-                                    className="w-full mt-1"
-                                />
-                                {form.Documents.Marksheets.length > 0 && (
-                                    <div className="mt-2 space-y-2">
-                                        <p className="text-xs font-medium text-gray-700">Selected files ({form.Documents.Marksheets.length}):</p>
-                                        {form.Documents.Marksheets.map((file, idx) => (
-                                            <div key={idx} className="flex items-center justify-between bg-green-50 px-3 py-2 rounded border border-green-200">
-                                                <span className="text-xs text-green-700 truncate flex-1">✓ {file.name}</span>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setForm(prev => ({
-                                                            ...prev,
-                                                            Documents: {
-                                                                ...prev.Documents,
-                                                                Marksheets: prev.Documents.Marksheets.filter((_, i) => i !== idx)
-                                                            }
-                                                        }));
-                                                    }}
-                                                    className="ml-2 text-red-600 hover:text-red-800 text-xs font-bold"
-                                                >
-                                                    ✕
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                                <p className="text-xs text-gray-500 mt-1">Upload new files to add</p>
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium">Other Documents (Multiple)</label>
-                                <input
-                                    type="file"
-                                    accept=".pdf,.jpg,.jpeg,.png"
-                                    multiple
-                                    onChange={(e) => {
-                                        const newFiles = Array.from(e.target.files);
-                                        setForm((prev) => ({
-                                            ...prev,
-                                            Documents: {
-                                                ...prev.Documents,
-                                                OtherDocuments: [...prev.Documents.OtherDocuments, ...newFiles],
-                                            },
-                                        }));
-                                        e.target.value = ''; // Clear input for reuse
-                                    }}
-                                    className="w-full mt-1"
-                                />
-                                {form.Documents.OtherDocuments.length > 0 && (
-                                    <div className="mt-2 space-y-2">
-                                        <p className="text-xs font-medium text-gray-700">Selected files ({form.Documents.OtherDocuments.length}):</p>
-                                        {form.Documents.OtherDocuments.map((file, idx) => (
-                                            <div key={idx} className="flex items-center justify-between bg-purple-50 px-3 py-2 rounded border border-purple-200">
-                                                <span className="text-xs text-purple-700 truncate flex-1">✓ {file.name}</span>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setForm(prev => ({
-                                                            ...prev,
-                                                            Documents: {
-                                                                ...prev.Documents,
-                                                                OtherDocuments: prev.Documents.OtherDocuments.filter((_, i) => i !== idx)
-                                                            }
-                                                        }));
-                                                    }}
-                                                    className="ml-2 text-red-600 hover:text-red-800 text-xs font-bold"
-                                                >
-                                                    ✕
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                                <p className="text-xs text-gray-500 mt-1">Upload new files to add (Resume, Certificates, etc.)</p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Action Buttons */}
                     <div className="flex justify-end gap-3 pt-4">
                         <button
                             type="button"

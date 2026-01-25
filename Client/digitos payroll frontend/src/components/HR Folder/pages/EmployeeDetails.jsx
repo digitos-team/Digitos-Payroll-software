@@ -83,6 +83,11 @@ const EmployeeDetails = () => {
                         <span className="px-4 py-1.5 bg-gray-50 text-gray-600 rounded-full text-sm font-medium border border-gray-200">
                             {employee.BranchId?.BranchName || "Branch Not Set"}
                         </span>
+                        {employee.EmployeeType && (
+                            <span className="px-4 py-1.5 bg-indigo-50 text-indigo-700 rounded-full text-sm font-medium border border-indigo-100">
+                                {employee.EmployeeType}
+                            </span>
+                        )}
                     </div>
                 </div>
             </div>

@@ -84,6 +84,7 @@ const addUser = async (req, res) => {
       DateOfBirth,
       AdhaarNumber,
       PANNumber,
+      EmployeeType,
     } = req.body;
 
     // Sanitize ObjectIds (handle empty strings)
@@ -180,6 +181,7 @@ const addUser = async (req, res) => {
       DateOfBirth,
       AdhaarNumber,
       PANNumber,
+      EmployeeType,
       ProfilePhoto: req.files?.ProfilePhoto?.[0]?.path || "",
       Documents: documents,
     });

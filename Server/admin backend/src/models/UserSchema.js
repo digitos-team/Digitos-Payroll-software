@@ -22,9 +22,14 @@ const UserSchema = new mongoose.Schema({
 
   // Employee details
   EmployeeCode: { type: String },
+  EmployeeType: {
+    type: String,
+    enum: ["Intern", "Permanent", "Contract Base", "Others"],
+  },
   JoiningDate: { type: Date },
- AdhaarNumber: { type: String },
+  AdhaarNumber: { type: String },
   PANNumber: { type: String },
+
   // Bank Details
   BankDetails: {
     BankName: { type: String },
@@ -70,15 +75,13 @@ const UserSchema = new mongoose.Schema({
       uploadedAt: { type: Date, default: Date.now }
     },
     OtherDocuments: [
-  {
-    filename: { type: String },
-    filepath: { type: String },
-    documentType: { type: String },
-    uploadedAt: { type: Date, default: Date.now }
-  }
-],
-
-    
+      {
+        filename: { type: String },
+        filepath: { type: String },
+        documentType: { type: String },
+        uploadedAt: { type: Date, default: Date.now }
+      }
+    ],
   },
 
   // Audit info (now outside Documents)

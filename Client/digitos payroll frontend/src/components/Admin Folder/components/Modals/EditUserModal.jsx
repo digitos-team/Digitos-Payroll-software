@@ -17,6 +17,7 @@ export default function EditUserModal({ open, onClose, onUpdate, employee }) {
         Department: "",
         Designation: "",
         BranchId: "",
+        EmployeeType: "",
         EmployeeCode: "",
         JoiningDate: "",
         DateOfBirth: "",
@@ -53,6 +54,7 @@ export default function EditUserModal({ open, onClose, onUpdate, employee }) {
                 Department: employee.DepartmentId?._id || employee.DepartmentId || "",
                 Designation: employee.DesignationId?._id || employee.DesignationId || "",
                 BranchId: employee.BranchId?._id || employee.BranchId || "",
+                EmployeeType: employee.EmployeeType || "",
                 EmployeeCode: employee.EmployeeCode || "",
                 JoiningDate: employee.JoiningDate ? new Date(employee.JoiningDate).toISOString().split('T')[0] : "",
                 DateOfBirth: employee.DateOfBirth ? new Date(employee.DateOfBirth).toISOString().split('T')[0] : "",
@@ -184,6 +186,7 @@ export default function EditUserModal({ open, onClose, onUpdate, employee }) {
         if (form.Department) formData.append("DepartmentId", form.Department);
         if (form.Designation) formData.append("DesignationId", form.Designation);
         if (form.BranchId) formData.append("BranchId", form.BranchId);
+        if (form.EmployeeType) formData.append("EmployeeType", form.EmployeeType);
         if (form.EmployeeCode) formData.append("EmployeeCode", form.EmployeeCode);
         if (form.JoiningDate) formData.append("JoiningDate", form.JoiningDate);
         if (form.DateOfBirth) formData.append("DateOfBirth", form.DateOfBirth);
@@ -429,8 +432,24 @@ export default function EditUserModal({ open, onClose, onUpdate, employee }) {
                                     <input
                                         value={form.EmployeeCode}
                                         onChange={(e) => updateField("EmployeeCode", e.target.value)}
-                                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-gray-100 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none cursor-not-allowed"
+                                        readOnly
                                     />
+                                </div>
+
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">Employee Type</label>
+                                    <select
+                                        value={form.EmployeeType}
+                                        onChange={(e) => updateField("EmployeeType", e.target.value)}
+                                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    >
+                                        <option value="">Select Type</option>
+                                        <option value="Intern">Intern</option>
+                                        <option value="Permanent">Permanent</option>
+                                        <option value="Contract Base">Contract Base</option>
+                                        <option value="Others">Others</option>
+                                    </select>
                                 </div>
 
                                 <div>

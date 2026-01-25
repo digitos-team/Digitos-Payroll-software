@@ -17,7 +17,7 @@ export default function AddUserModal({ open, onClose, onAdd, isLoading }) {
     Department: "",
     Designation: "",
     BranchId: "",
-    EmployeeCode: "",
+    EmployeeType: "",
     JoiningDate: "",
     DateOfBirth: "",
     AdhaarNumber: "",
@@ -138,7 +138,7 @@ export default function AddUserModal({ open, onClose, onAdd, isLoading }) {
     if (form.Department) formData.append("DepartmentId", form.Department); // Note: Backend expects DepartmentId
     if (form.Designation) formData.append("DesignationId", form.Designation); // Note: Backend expects DesignationId
     if (form.BranchId) formData.append("BranchId", form.BranchId);
-    if (form.EmployeeCode) formData.append("EmployeeCode", form.EmployeeCode);
+    if (form.EmployeeType) formData.append("EmployeeType", form.EmployeeType);
     if (form.JoiningDate) formData.append("JoiningDate", form.JoiningDate);
     if (form.DateOfBirth) formData.append("DateOfBirth", form.DateOfBirth);
     if (form.AdhaarNumber) formData.append("AdhaarNumber", form.AdhaarNumber);
@@ -366,13 +366,21 @@ export default function AddUserModal({ open, onClose, onAdd, isLoading }) {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">Employee Code</label>
-                  <input
-                    value={form.EmployeeCode}
-                    onChange={(e) => updateField("EmployeeCode", e.target.value)}
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">Employee Type</label>
+                  <select
+                    value={form.EmployeeType}
+                    onChange={(e) => updateField("EmployeeType", e.target.value)}
                     className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
+                  >
+                    <option value="">Select Type</option>
+                    <option value="Intern">Intern</option>
+                    <option value="Permanent">Permanent</option>
+                    <option value="Contract Base">Contract Base</option>
+                    <option value="Others">Others</option>
+                  </select>
                 </div>
+
+
 
                 <div>
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">Joining Date</label>

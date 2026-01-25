@@ -139,6 +139,7 @@ const Employee = () => {
               <th className="py-3 px-4 text-gray-600">Emp Code</th>
               <th className="py-3 px-4 text-gray-600">Email</th>
               <th className="py-3 px-4 text-gray-600">Department</th>
+              <th className="py-3 px-4 text-gray-600">Type</th>
               <th className="py-3 px-4 text-gray-600">Role</th>
               <th className="py-3 px-4 text-gray-600">Actions</th>
             </tr>
@@ -170,6 +171,9 @@ const Employee = () => {
                 <td className="py-3 px-4 text-gray-600">{emp.EmployeeCode || "-"}</td>
                 <td className="py-3 px-4 text-gray-600">{emp.Email}</td>
                 <td className="py-3 px-4">{emp.DepartmentId?.DepartmentName || "-"}</td>
+                <td className="py-3 px-4">
+                  <span className="text-sm text-gray-600">{emp.EmployeeType || "-"}</span>
+                </td>
                 <td className="py-3 px-4 capitalize">
                   <span className={`px-3 py-1 rounded-full text-sm ${emp.role === "CA" ? "bg-purple-100 text-purple-700" :
                     emp.role === "HR" ? "bg-orange-100 text-orange-700" :
