@@ -27,7 +27,7 @@ const saveDocumentFile = (updateObj, files, field) => {
     uploadedAt: new Date(),
   };
 };
-//=========================Generate Employee Code (Ex:DIS00101)============//
+//=========================Generate Employee Code (Ex:DIS-11001)============//
 const generateEmployeeCode = async () => {
   // Use aggregation to compute numeric part and get max without scanning all documents into app memory
   const res = await User.aggregate([
@@ -35,17 +35,17 @@ const generateEmployeeCode = async () => {
     {
       $project: {
         codeStr: "$EmployeeCode",
-        // Remove DIS00 prefix if present, else keep original
+        // Remove DIS-11 prefix if present, else keep original
         numericPart: {
           $toInt: {
             $cond: [
               {
-                $regexMatch: { input: "$EmployeeCode", regex: /^DIS00(\d+)$/ },
+                $regexMatch: { input: "$EmployeeCode", regex: /^DIS-11(\d+)$/ },
               },
               {
                 $replaceOne: {
                   input: "$EmployeeCode",
-                  find: "DIS00",
+                  find: "DIS-11",
                   replacement: "",
                 },
               },
@@ -58,10 +58,10 @@ const generateEmployeeCode = async () => {
     { $group: { _id: null, maxNum: { $max: "$numericPart" } } },
   ]);
 
-  const maxNumber = res[0]?.maxNum || 100; // default baseline
+  const maxNumber = res[0]?.maxNum || 0; // default baseline 0, so next is 1
   const nextNumber = maxNumber + 1;
   const formatted = String(nextNumber).padStart(3, "0");
-  return `DIS00${formatted}`;
+  return `DIS-11${formatted}`;
 };
 
 // ========================= Add User ========================= //
