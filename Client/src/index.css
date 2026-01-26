@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+    height: 100%;
+}
+
+body {
+    @apply bg-gray-100;
+    font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+
+/* Smooth theme transitions - targeted to avoid performance lag */
+.dark body, 
+.dark .bg-white, 
+.dark .bg-gray-100, 
+.dark .bg-gray-50,
+.dark input,
+.dark select,
+.dark textarea {
+    transition: background-color .18s ease, color .18s ease, border-color .18s ease;
+}
+
+/* Dark mode overrides for common utility classes so components pick up theme without editing every file */
+.dark body {
+    background-color: #0f172a;
+    /* gray-900 */
+    color: #f3f4f6;
+    /* gray-100 */
+}
+
+.dark .bg-white {
+    background-color: #111827 !important;
+}
+
+/* gray-900/darker surface */
+.dark .bg-gray-100 {
+    background-color: #0b1220 !important;
+}
+
+.dark .text-gray-900 {
+    color: #f9fafb !important;
+}
+
+.dark .text-gray-800 {
+    color: #f3f4f6 !important;
+}
+
+.dark .text-gray-700 {
+    color: #e5e7eb !important;
+}
+
+.dark .text-gray-600 {
+    color: #9ca3af !important;
+}
+
+.dark .text-gray-500 {
+    color: #9ca3af !important;
+}
+
+.dark .text-gray-400 {
+    color: #9ca3af !important;
+}
+
+.dark .border {
+    border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.dark .bg-gray-50 {
+    background-color: #071029 !important;
+}
+
+/* Inputs/selects */
+.dark input,
+.dark select,
+.dark textarea {
+    background-color: #0b1220;
+    /* dark input bg */
+    color: #e5e7eb;
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Buttons with gray backgrounds */
+.dark .bg-gray-100 {
+    background-color: #0b1220 !important;
+}
+
+
+/* Utility tweaks for scrollbar in recent activities */
+.overflow-auto::-webkit-scrollbar {
+    height: 8px;
+    width: 8px
+}
+
+.overflow-auto::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 8px
+}
