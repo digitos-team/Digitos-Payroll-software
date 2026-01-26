@@ -10,6 +10,7 @@ import {
   getMonthlyExpenses,
   getMonthExpenses,
   copyFixedExpenses,
+  deferExpense,
 } from "../controller/ExpenseController.js";
 import { authorizeRoles, verifyToken } from "../Middleware/authMiddleware.js";
 import { acceptAnyFile } from "../Middleware/upload.js";
@@ -98,6 +99,13 @@ ExpenseRoutes.post(
   verifyToken,
   authorizeRoles("Admin"),
   copyFixedExpenses
+);
+
+ExpenseRoutes.put(
+  "/defer-expense/:id",
+  verifyToken,
+  authorizeRoles("Admin"),
+  deferExpense
 );
 
 export { ExpenseRoutes };

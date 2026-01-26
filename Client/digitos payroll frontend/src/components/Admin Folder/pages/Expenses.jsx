@@ -3,7 +3,7 @@ import { Button } from "@mui/material";
 
 import AddExpenseModal from "../components/Modals/AddExpenseModal";
 import EditExpenseModal from "../components/Modals/EditExpenseModal";
-import { addExpense, getAllExpenses, getExpensesByOrder, updateExpense, deleteExpense, getMonthExpenses, copyFixedExpenses } from "../../../utils/api/expenseapi";
+import { addExpense, getAllExpenses, getExpensesByOrder, updateExpense, deleteExpense, getMonthExpenses, copyFixedExpenses, deferExpense } from "../../../utils/api/expenseapi";
 import { getOrdersApi } from "../../../utils/api/orderapi";
 
 // Base URL for accessing uploaded files (without /api)
@@ -243,6 +243,30 @@ const Expenses = () => {
         } catch (err) {
             console.error("Error deleting expense:", err);
             alert("Failed to delete expense. Check console for details.");
+        }
+    };
+
+    // Handle defer expense
+    const handleDeferExpense = async (expenseId) => {
+        if (!window.confirm("Are you sure you want to defer this expense to the next month?")) {
+            return;
+        }
+
+        try {
+            await deferExpense(expenseId);
+            fetchExpenses();
+            // Also refresh order expenses if showing
+            if (showOrderExpenses && selectedOrderId) {
+                handleOrderSelect(selectedOrderId);
+            }
+            // Refresh monthly expenses if showing
+            if (showMonthlyExpenses && selectedMonth && selectedYear) {
+                handleMonthlyFilter();
+            }
+            alert("Expense deferred to next month successfully!");
+        } catch (err) {
+            console.error("Error deferring expense:", err);
+            alert("Failed to defer expense. Check console for details.");
         }
     };
 
@@ -705,6 +729,15 @@ const Expenses = () => {
                                                 >
                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeferExpense(item._id)}
+                                                    className="p-1.5 rounded bg-orange-100 hover:bg-orange-200 text-orange-600 transition"
+                                                    title="Defer to Next Month"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
                                                 </button>
                                             </div>

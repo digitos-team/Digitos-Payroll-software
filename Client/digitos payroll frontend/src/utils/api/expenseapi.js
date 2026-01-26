@@ -128,6 +128,16 @@ export const deleteExpense = async (expenseId) => {
         throw err;
     }
 };
+// ==================== DEFER EXPENSE ====================
+export const deferExpense = async (expenseId) => {
+    try {
+        const res = await axiosInstance.put(`/defer-expense/${expenseId}`);
+        return res.data;
+    } catch (err) {
+        console.error("Error deferring expense:", err);
+        throw err;
+    }
+};
 
 // ==================== GET TOTAL EXPENSE ====================
 export const getTotalExpense = async () => {

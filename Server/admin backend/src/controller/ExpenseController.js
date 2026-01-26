@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { Expense } from "../models/ExpenseSchema.js";
+import { createRecentActivity } from "./GetRecentActivities.js";
 
 // -------------------- Add Expense --------------------
 const addExpense = async (req, res) => {
@@ -48,6 +49,14 @@ const addExpense = async (req, res) => {
     });
 
     await expense.save();
+
+    // Log activity
+    await createRecentActivity({
+      CompanyId,
+      userId: req.user._id,
+      action: "Added Expense",
+      target: `Expense: ${ExpenseTitle}`,
+    });
 
     // ✅ REMOVED: Purchase creation logic
     // Purchases are only created when order is confirmed/paid in OrderController
@@ -149,6 +158,14 @@ const updateExpense = async (req, res) => {
       { new: true }
     );
 
+    // Log activity
+    await createRecentActivity({
+      CompanyId: updatedExpense.CompanyId,
+      userId: req.user._id,
+      action: "Updated Expense",
+      target: `Expense: ${updatedExpense.ExpenseTitle}`,
+    });
+
     res.status(200).json({
       message: "Expense updated successfully",
       expense: updatedExpense,
@@ -168,6 +185,14 @@ const deleteExpense = async (req, res) => {
     if (!expense) {
       return res.status(404).json({ message: "Expense not found" });
     }
+
+    // Log activity
+    await createRecentActivity({
+      CompanyId: expense.CompanyId,
+      userId: req.user._id,
+      action: "Deleted Expense",
+      target: `Expense: ${expense.ExpenseTitle}`,
+    });
 
     res.status(200).json({ message: "Expense deleted successfully" });
   } catch (error) {
@@ -498,6 +523,41 @@ const copyFixedExpenses = async (req, res) => {
   }
 };
 
+// -------------------- Defer Expense --------------------
+const deferExpense = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const expense = await Expense.findById(id);
+    if (!expense) {
+      return res.status(404).json({ message: "Expense not found" });
+    }
+
+    // Move date to next month (same day)
+    const currentDate = new Date(expense.ExpenseDate);
+    currentDate.setMonth(currentDate.getMonth() + 1);
+
+    expense.ExpenseDate = currentDate;
+    await expense.save();
+
+    // Log activity
+    await createRecentActivity({
+      CompanyId: expense.CompanyId,
+      userId: req.user._id,
+      action: "Deferred Expense",
+      target: `Expense: ${expense.ExpenseTitle}`,
+    });
+
+    res.status(200).json({
+      message: "Expense deferred to next month successfully",
+      expense,
+    });
+  } catch (error) {
+    console.error("Error in deferExpense:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 export {
   addExpense,
   getAllExpenses,
@@ -509,4 +569,5 @@ export {
   getMonthlyExpenses,
   getMonthExpenses,
   copyFixedExpenses,
+  deferExpense,
 };
