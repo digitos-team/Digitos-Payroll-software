@@ -4,9 +4,9 @@ import Loader from "../Loader/Loader";
 import { AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { getAllExpenses } from "../../../utils/CA api/CaApi";
+import { BASE_URL } from "../../../utils/config";
 
 // Base URL for accessing uploaded files (without /api)
-const BASE_URL = "http://localhost:5000/";
 
 const Expenses = () => {
   const [expenses, setExpenses] = useState([]);

@@ -43,4 +43,7 @@ const LeaveRequestSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
+LeaveRequestSchema.index({ CompanyId: 1, Status: 1 });
+LeaveRequestSchema.index({ UserId: 1 });
+
 export const LeaveRequest = mongoose.model("LeaveRequest", LeaveRequestSchema);

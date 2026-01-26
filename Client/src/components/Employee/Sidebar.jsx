@@ -6,6 +6,7 @@ import { User, DollarSign, LogOut, LayoutDashboard, Calendar, Sun, Moon } from '
 import { getEmployeeById } from '../../utils/api/employeeapi';
 import EmployeeNotifications from './EmployeeNotifications';
 import { useTheme } from '../Admin Folder/context/ThemeContext';
+import { getAssetUrl } from '../../utils/config';
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -144,7 +145,7 @@ const Sidebar = () => {
             {employeeData?.ProfilePhoto ? (
               <>
                 <img
-                  src={`http://localhost:5000/${employeeData.ProfilePhoto.replace(/\\/g, "/")}`}
+                  src={getAssetUrl(employeeData.ProfilePhoto)}
                   alt={employeeData?.Name || user?.name || "Employee"}
                   className="w-10 h-10 rounded-full object-cover border-2 border-indigo-200"
                   onError={(e) => {

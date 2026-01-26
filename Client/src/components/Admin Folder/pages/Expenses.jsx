@@ -5,9 +5,9 @@ import AddExpenseModal from "../components/Modals/AddExpenseModal";
 import EditExpenseModal from "../components/Modals/EditExpenseModal";
 import { addExpense, getAllExpenses, getExpensesByOrder, updateExpense, deleteExpense, getMonthExpenses, copyFixedExpenses, deferExpense } from "../../../utils/api/expenseapi";
 import { getOrdersApi } from "../../../utils/api/orderapi";
+import { BASE_URL } from "../../../utils/config";
 
 // Base URL for accessing uploaded files (without /api)
-const BASE_URL = "http://localhost:5000/";
 
 const Expenses = () => {
     const [openModal, setOpenModal] = useState(false);

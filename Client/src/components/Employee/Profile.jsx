@@ -6,6 +6,7 @@ import {
   Building, Briefcase, FileText, Upload, CheckCircle, X, Loader
 } from 'lucide-react';
 import { getEmployeeById, updateEmployee } from '../../utils/api/employeeapi';
+import { getAssetUrl } from '../../utils/config';
 
 const SectionHeader = ({ icon: Icon, title, description }) => (
   <div className="mb-6 flex items-start gap-3 border-b border-gray-100 pb-4">
@@ -298,7 +299,7 @@ const Profile = () => {
             <div className="relative">
               {employeeData?.ProfilePhoto ? (
                 <img
-                  src={`http://localhost:5000/${employeeData.ProfilePhoto.replace(/\\/g, "/")}`}
+                  src={getAssetUrl(employeeData.ProfilePhoto)}
                   alt={employeeData?.Name || "Employee"}
                   className="w-24 h-24 rounded-full object-cover border-4 border-indigo-100 shadow-md"
                   onError={(e) => {
@@ -425,7 +426,7 @@ const Profile = () => {
                           </span>
                         </div>
                         <a
-                          href={`http://localhost:5000/${employeeData.Documents.BankPassbook.filepath.replace(/\\/g, "/")}`}
+                          href={getAssetUrl(employeeData.Documents.BankPassbook.filepath)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm font-medium"
@@ -450,7 +451,7 @@ const Profile = () => {
                           </span>
                         </div>
                         <a
-                          href={`http://localhost:5000/${employeeData.Documents.AdhaarCard.filepath.replace(/\\/g, "/")}`}
+                          href={getAssetUrl(employeeData.Documents.AdhaarCard.filepath)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-orange-600 hover:text-orange-800 flex items-center gap-1 text-sm font-medium"
@@ -475,7 +476,7 @@ const Profile = () => {
                           </span>
                         </div>
                         <a
-                          href={`http://localhost:5000/${employeeData.Documents.PANCard.filepath.replace(/\\/g, "/")}`}
+                          href={getAssetUrl(employeeData.Documents.PANCard.filepath)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 text-sm font-medium"
@@ -502,7 +503,7 @@ const Profile = () => {
                               </span>
                             </div>
                             <a
-                              href={`http://localhost:5000/${marksheet.filepath.replace(/\\/g, "/")}`}
+                              href={getAssetUrl(marksheet.filepath)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-green-600 hover:text-green-800 flex items-center gap-1 text-sm font-medium"
@@ -531,7 +532,7 @@ const Profile = () => {
                               </span>
                             </div>
                             <a
-                              href={`http://localhost:5000/${doc.filepath.replace(/\\/g, "/")}`}
+                              href={getAssetUrl(doc.filepath)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-purple-600 hover:text-purple-800 flex items-center gap-1 text-sm font-medium"

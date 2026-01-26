@@ -4,6 +4,7 @@ import { FiEdit, FiEye, FiSearch, FiBriefcase, FiUser } from "react-icons/fi";
 import { getAllEmployees, updateEmployee } from "../../../utils/api/employeeapi";
 import EditUserModal from "../components/Modals/EditUserModal";
 import EmployeeDetailModal from "../components/Modals/EmployeeDetailModal";
+import { getAssetUrl } from "../../../utils/config";
 
 const Employees = () => {
   const { companyId } = useSelector((state) => state.auth);
@@ -58,8 +59,7 @@ const Employees = () => {
   };
 
   const getProfilePhotoUrl = (path) => {
-    if (!path) return null;
-    return `http://localhost:5000/${path.replace(/\\/g, "/")}`;
+    return getAssetUrl(path);
   };
 
   const filteredEmployees = employees.filter((emp) => {

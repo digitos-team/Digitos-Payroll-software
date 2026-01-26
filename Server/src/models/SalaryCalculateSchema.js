@@ -24,10 +24,12 @@ const SalarySlipSchema = new mongoose.Schema(
     grossSalary: { type: Number, default: 0 },
     netSalary: { type: Number, default: 0 },
     TaxAmount: { type: Number, default: 0 },
-      DepartmentId: { type: mongoose.Schema.Types.ObjectId, ref: "Department" },
-      BranchId: { type: mongoose.Schema.Types.ObjectId, ref: "Branch" }, 
+    DepartmentId: { type: mongoose.Schema.Types.ObjectId, ref: "Department" },
+    BranchId: { type: mongoose.Schema.Types.ObjectId, ref: "Branch" },
   },
   { timestamps: true }
 );
+
+SalarySlipSchema.index({ CompanyId: 1, EmployeeID: 1, Month: 1 }, { unique: true });
 
 export const SalarySlip = mongoose.model("SalarySlip", SalarySlipSchema);

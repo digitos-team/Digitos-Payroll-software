@@ -118,7 +118,7 @@ Server.use((err, req, res, next) => {
 });
 
 // ------------------ Start server ------------------
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 6000;
 Server.listen(PORT, () => {
   console.log(`Payroll server running on port ${PORT}`);
 });

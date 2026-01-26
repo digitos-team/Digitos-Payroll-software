@@ -1,10 +1,43 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { MdClose } from 'react-icons/md';
 
 export default function ConfigureSalaryModal({ open, onClose, employee, salaryHeads, onSave }) {
+    const { user, role } = useSelector((state) => state.auth || {});
+    const currentRole = (role || user?.role || '').toLowerCase();
     const [salarySettings, setSalarySettings] = useState({});
     const [effectFrom, setEffectFrom] = useState(new Date().toISOString().split('T')[0]);
     const [isTaxApplicable, setIsTaxApplicable] = useState(false);
+
+    // Populate state when employee changes
+    React.useEffect(() => {
+        if (employee && employee.salarySettings) {
+            const settings = employee.salarySettings;
+
+            // Set basic fields
+            setEffectFrom(settings.EffectFrom ? settings.EffectFrom.split('T')[0] : new Date().toISOString().split('T')[0]);
+            setIsTaxApplicable(settings.isTaxApplicable || false);
+
+            // Set salary heads
+            const headMap = {};
+            if (Array.isArray(settings.SalaryHeads)) {
+                settings.SalaryHeads.forEach(h => {
+                    // Handle both populated object and direct ID
+                    const headId = h.SalaryHeadId?._id || h.SalaryHeadId;
+                    headMap[headId] = {
+                        amount: h.applicableValue || '',
+                        percentage: h.percentage || ''
+                    };
+                });
+            }
+            setSalarySettings(headMap);
+        } else {
+            // Reset if no existing settings
+            setSalarySettings({});
+            setEffectFrom(new Date().toISOString().split('T')[0]);
+            setIsTaxApplicable(false);
+        }
+    }, [employee]);
 
     if (!open || !employee) return null;
 
@@ -167,7 +200,7 @@ export default function ConfigureSalaryModal({ open, onClose, employee, salaryHe
                             type="submit"
                             className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
                         >
-                            Save Configuration
+                            {(currentRole === 'admin' || currentRole === 'ca') ? 'Save Configuration' : 'Request Configuration Change'}
                         </button>
                     </div>
                 </form>

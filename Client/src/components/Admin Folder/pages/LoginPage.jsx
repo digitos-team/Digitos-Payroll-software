@@ -4,6 +4,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../../redux/loginSlice";
+import { API_URL } from "../../../utils/config";
 
 import loginImage from "../../../assets/login_image.jpeg";
 import logo from "../../../assets/Black Text Logo.jpeg";
@@ -29,7 +30,7 @@ export default function Login() {
     }
 
     try {
-      const res = await axios.post("http://localhost:5000/api/login", {
+      const res = await axios.post(`${API_URL}/login`, {
         Email: email,
         Password: password,
       });

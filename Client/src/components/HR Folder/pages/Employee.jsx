@@ -6,6 +6,7 @@ import { getAllEmployees, deleteUser, updateUser } from "../utils/api/EmployeeAp
 import { addEmployee } from "../../../utils/api/employeeapi";
 import AddEmployeeModal from "../components/Modals/AddEmployeeModal";
 import EditEmployeeModal from "../components/Modals/EditEmployeeModal";
+import { getAssetUrl } from '../../../utils/config';
 
 const Employee = () => {
   const navigate = useNavigate();
@@ -152,7 +153,7 @@ const Employee = () => {
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold overflow-hidden">
                     {emp.ProfilePhoto ? (
                       <img
-                        src={`http://localhost:5000/${emp.ProfilePhoto.replace(/\\/g, "/")}`}
+                        src={getAssetUrl(emp.ProfilePhoto)}
                         alt={emp.Name}
                         className="w-full h-full object-cover"
                         onError={(e) => {

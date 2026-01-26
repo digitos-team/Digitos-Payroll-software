@@ -64,4 +64,6 @@ const ExpenseSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+ExpenseSchema.index({ CompanyId: 1, Month: 1 });
+
 export const Expense = mongoose.model("Expense", ExpenseSchema);

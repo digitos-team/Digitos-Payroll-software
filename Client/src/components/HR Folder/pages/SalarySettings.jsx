@@ -9,10 +9,12 @@ import {
     MdExpandMore,
     MdExpandLess,
     MdPlayArrow,
-    MdDelete
+    MdDelete,
+    MdNotifications
 } from 'react-icons/md';
 import ConfigureSalaryModal from '../components/Modals/ConfigureSalaryModal';
-import { fetchSalaryHeads } from '../../../utils/api/salaryheads';
+import AddSalaryHeadModal from '../../Admin Folder/components/Modals/AddSalaryHeadModal';
+import { fetchSalaryHeads, addSalaryHead, deleteSalaryHead } from '../../../utils/api/salaryheads';
 import {
     addOrUpdateSalarySetting,
     calculateSalaryForAll,
@@ -20,7 +22,10 @@ import {
     getSalarySettings,
     generatePayslipPDF,
     getTotalSalaryDistribution,
-    deleteSalarySetting
+    deleteSalarySetting,
+    getHRNotifications,
+    markNotificationRead,
+    fetchSalaryRequests
 } from '../utils/api/SalaryAPi';
 import { getAllEmployees } from '../utils/api/EmployeeApi';
 
@@ -32,11 +37,14 @@ export default function SalarySetting() {
     const [salarySettings, setSalarySettings] = useState([]);
     const [generatedSlips, setGeneratedSlips] = useState({}); // { employeeId: slipData }
     const [isConfigureModalOpen, setIsConfigureModalOpen] = useState(false);
+    const [isAddSalaryHeadModalOpen, setIsAddSalaryHeadModalOpen] = useState(false);
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [loading, setLoading] = useState(false);
     const [generating, setGenerating] = useState(false);
     const [expandedSlip, setExpandedSlip] = useState(null);
     const [distribution, setDistribution] = useState(null);
+    const [notifications, setNotifications] = useState([]);
+    const [pendingRequests, setPendingRequests] = useState([]);
 
     const { companyId: reduxCompanyId } = useSelector((state) => state.auth || {});
     // Extract company ID - handle both object and string formats
@@ -57,14 +65,18 @@ export default function SalarySetting() {
                 setSalaryHeads(heads || []);
             } else if (activeTab === 'salary-settings') {
                 // Load employees, salary heads, and existing salary settings
-                const [empRes, heads, settings] = await Promise.all([
+                const [empRes, heads, settings, pendingReq] = await Promise.all([
                     getAllEmployees(targetCompanyId),
                     fetchSalaryHeads(targetCompanyId),
-                    getSalarySettings(targetCompanyId)
+                    getSalarySettings(targetCompanyId),
+                    fetchSalaryRequests(targetCompanyId)
                 ]);
 
                 const empList = Array.isArray(empRes?.data) ? empRes.data : (empRes?.data?.data || []);
                 const settingsList = settings || [];
+                const pendingList = pendingReq?.data || [];
+
+                setPendingRequests(pendingList);
 
                 // Merge employee data with salary settings (handle populated and unpopulated IDs)
                 const employeesWithSettings = empList.map((emp) => {
@@ -82,6 +94,11 @@ export default function SalarySetting() {
                 setSalarySettings(settingsList);
             } else if (activeTab === 'payslips') {
                 await loadPayslipData();
+            } else if (activeTab === 'notifications') {
+                const res = await getHRNotifications();
+                if (res.success) {
+                    setNotifications(res.data);
+                }
             }
         } catch (error) {
             console.error('Failed to load data:', error);
@@ -240,8 +257,19 @@ export default function SalarySetting() {
 
     const handleSaveSalaryConfiguration = async (data) => {
         try {
-            await addOrUpdateSalarySetting({ ...data, CompanyId: targetCompanyId });
-            alert('Salary configuration saved successfully!');
+            const response = await addOrUpdateSalarySetting({ ...data, CompanyId: targetCompanyId });
+
+            if (response.data && response.data.success === false) {
+                alert(response.data.message || 'Operation failed');
+                return;
+            }
+
+            if (response.data?.isRequest) {
+                alert('Salary configuration request sent to Admin for approval.');
+            } else {
+                alert('Salary configuration saved successfully!');
+            }
+
             setIsConfigureModalOpen(false);
             setSelectedEmployee(null);
             // Refresh relevant data regardless of current tab
@@ -279,9 +307,36 @@ export default function SalarySetting() {
         setExpandedSlip((prev) => (prev === empId ? null : empId));
     };
 
+    const handleAddSalaryHead = async (data) => {
+        try {
+            await addSalaryHead(data, targetCompanyId);
+            alert('Salary head added successfully!');
+            loadData();
+        } catch (error) {
+            console.error('Failed to add salary head:', error);
+            alert('Failed to add salary head');
+        }
+    };
+
+    const handleDeleteSalaryHead = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this salary head?')) return;
+        try {
+            await deleteSalaryHead(id, targetCompanyId);
+            alert('Salary head deleted successfully!');
+            loadData();
+        } catch (error) {
+            console.error('Failed to delete salary head:', error);
+            alert('Failed to delete salary head');
+        }
+    };
+
     // Helpers
     const hasConfiguration = (emp) => {
         return emp?.salarySettings && Array.isArray(emp.salarySettings.SalaryHeads) && emp.salarySettings.SalaryHeads.length > 0;
+    };
+
+    const hasPendingRequest = (empId) => {
+        return pendingRequests.some(req => req.EmployeeID?._id === empId || req.EmployeeID === empId);
     };
 
     const calculateTotals = (settings) => {
@@ -320,7 +375,8 @@ export default function SalarySetting() {
     const tabs = [
         { id: 'salary-heads', label: 'Salary Heads', icon: <MdAttachMoney size={20} /> },
         { id: 'salary-settings', label: 'Salary Settings', icon: <MdSettings size={20} /> },
-        { id: 'payslips', label: 'Payslip Management', icon: <MdReceipt size={20} /> }
+        { id: 'payslips', label: 'Payslip Management', icon: <MdReceipt size={20} /> },
+        { id: 'notifications', label: 'Notifications', icon: <MdNotifications size={20} /> }
     ];
 
     return (
@@ -355,9 +411,18 @@ export default function SalarySetting() {
                 {/* Salary Heads Tab */}
                 {activeTab === 'salary-heads' && (
                     <div className="space-y-4">
-                        <div>
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Salary Heads</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">View salary components like Basic, HRA, TA, etc.</p>
+                        <div className="flex justify-between items-center mb-2">
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Salary Heads</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">View and manage salary components like Basic, HRA, TA, etc.</p>
+                            </div>
+                            <button
+                                onClick={() => setIsAddSalaryHeadModalOpen(true)}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                            >
+                                <MdAttachMoney />
+                                Add Salary Head
+                            </button>
                         </div>
 
                         {loading ? (
@@ -368,9 +433,18 @@ export default function SalarySetting() {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {salaryHeads.map((head) => (
                                     <div key={head._id} className="border dark:border-gray-700 rounded-lg p-4 hover:shadow-lg transition-shadow">
-                                        <div className="mb-2">
-                                            <h4 className="font-semibold text-gray-900 dark:text-white">{head.SalaryHeadsTitle}</h4>
-                                            <span className="text-sm text-gray-500 dark:text-gray-400">({head.ShortName})</span>
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div>
+                                                <h4 className="font-semibold text-gray-900 dark:text-white">{head.SalaryHeadsTitle}</h4>
+                                                <span className="text-sm text-gray-500 dark:text-gray-400">({head.ShortName})</span>
+                                            </div>
+                                            <button
+                                                onClick={() => handleDeleteSalaryHead(head._id)}
+                                                className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors"
+                                                title="Delete Salary Head"
+                                            >
+                                                <MdDelete size={20} />
+                                            </button>
                                         </div>
                                         <div className="space-y-1 text-sm">
                                             <div className="flex justify-between">
@@ -429,9 +503,13 @@ export default function SalarySetting() {
                                                 <div className="flex gap-2">
                                                     <button
                                                         onClick={() => handleConfigureClick(emp)}
-                                                        className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                                                        disabled={hasPendingRequest(emp._id)}
+                                                        className={`px-3 py-1 text-sm text-white rounded ${hasPendingRequest(emp._id)
+                                                            ? 'bg-yellow-500 cursor-not-allowed'
+                                                            : 'bg-blue-600 hover:bg-blue-700'
+                                                            }`}
                                                     >
-                                                        Configure
+                                                        {hasPendingRequest(emp._id) ? 'Request Sent' : 'Configure'}
                                                     </button>
                                                     {emp.salarySettings && (
                                                         <button
@@ -698,6 +776,50 @@ export default function SalarySetting() {
                         )}
                     </div>
                 )}
+
+                {/* Notifications Tab */}
+                {activeTab === 'notifications' && (
+                    <div className="space-y-4">
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Admin Notifications</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Updates on your salary configuration requests</p>
+                        </div>
+
+                        {loading ? (
+                            <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</div>
+                        ) : notifications.length === 0 ? (
+                            <div className="text-center py-8 text-gray-500 dark:text-gray-400">No new notifications.</div>
+                        ) : (
+                            <div className="space-y-3">
+                                {notifications.map((notif) => (
+                                    <div key={notif._id} className={`p-4 border rounded-lg flex justify-between items-start ${notif.IsRead ? 'bg-white dark:bg-gray-800' : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200'}`}>
+                                        <div>
+                                            <h4 className="font-semibold text-gray-900 dark:text-white">{notif.EmployeeID?.Name}</h4>
+                                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                                                Request for salary configuration was <span className={`font-bold ${notif.Status === 'Approved' ? 'text-green-600' : 'text-red-600'}`}>{notif.Status}</span>
+                                            </p>
+                                            {notif.Status === 'Rejected' && notif.RejectionReason && (
+                                                <p className="text-sm text-red-500 mt-1">Reason: {notif.RejectionReason}</p>
+                                            )}
+                                            <p className="text-xs text-gray-400 mt-2">{new Date(notif.updatedAt).toLocaleString()}</p>
+                                        </div>
+                                        {!notif.IsRead && (
+                                            <button
+                                                onClick={async () => {
+                                                    await markNotificationRead(notif._id);
+                                                    setNotifications(prev => prev.map(n => n._id === notif._id ? { ...n, IsRead: true } : n));
+                                                }}
+                                                className="text-sm text-blue-600 hover:text-blue-800 underline"
+                                            >
+                                                Mark as Read
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Configure Salary Modal */}
@@ -710,6 +832,13 @@ export default function SalarySetting() {
                 employee={selectedEmployee}
                 salaryHeads={salaryHeads}
                 onSave={handleSaveSalaryConfiguration}
+            />
+
+            {/* Add Salary Head Modal */}
+            <AddSalaryHeadModal
+                open={isAddSalaryHeadModalOpen}
+                onClose={() => setIsAddSalaryHeadModalOpen(false)}
+                onAdd={handleAddSalaryHead}
             />
         </div>
     );

@@ -90,4 +90,6 @@ const UserSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
+UserSchema.index({ CompanyId: 1 });
+
 export const User = mongoose.model("User", UserSchema);

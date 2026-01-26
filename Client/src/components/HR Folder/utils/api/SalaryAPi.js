@@ -52,6 +52,37 @@ export const deleteSalarySetting = async (id) => {
     });
 };
 
+export const fetchSalaryRequests = async (overrideCompanyId = null) => {
+    const companyId = overrideCompanyId || getCompanyId();
+    try {
+        const response = await axiosInstance.post("/fetchsalaryrequests", { companyId });
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching salary requests:", error);
+        throw error;
+    }
+};
+
+export const approveSalaryRequest = async (requestId) => {
+    try {
+        const response = await axiosInstance.post("/approvesalaryrequest", { requestId });
+        return response.data;
+    } catch (error) {
+        console.error("Error approving salary request:", error);
+        throw error;
+    }
+};
+
+export const rejectSalaryRequest = async (requestId, reason) => {
+    try {
+        const response = await axiosInstance.post("/rejectsalaryrequest", { requestId, reason });
+        return response.data;
+    } catch (error) {
+        console.error("Error rejecting salary request:", error);
+        throw error;
+    }
+};
+
 export const calculateSalaryDetailed = async (employeeId, month, overrideCompanyId = null) => {
     const CompanyId = overrideCompanyId || getCompanyId();
     console.log("calculateSalaryDetailed - Sending:", { EmployeeID: employeeId, CompanyId, Month: month });
@@ -210,6 +241,26 @@ export const getTotalSalaryDistribution = async (month, overrideCompanyId = null
             console.warn("Total salary distribution endpoint returned 404 (No data or not found).");
         }
         return null;
+    }
+};
+
+export const getHRNotifications = async () => {
+    try {
+        const response = await axiosInstance.get("/hr-notifications");
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching HR notifications:", error);
+        throw error;
+    }
+};
+
+export const markNotificationRead = async (id) => {
+    try {
+        const response = await axiosInstance.post("/mark-notification-read", { id });
+        return response.data;
+    } catch (error) {
+        console.error("Error marking notification read:", error);
+        throw error;
     }
 };
 

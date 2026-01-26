@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FiArrowLeft, FiMail, FiPhone, FiMapPin, FiBriefcase, FiCalendar, FiCreditCard, FiFileText, FiDownload } from "react-icons/fi";
 import { getUserById } from "../utils/api/EmployeeApi";
+import { getAssetUrl } from "../../../utils/config";
 
 const EmployeeDetails = () => {
     const { id } = useParams();
@@ -50,7 +51,7 @@ const EmployeeDetails = () => {
                 <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-4xl font-bold shadow-md overflow-hidden shrink-0">
                     {employee.ProfilePhoto ? (
                         <img
-                            src={`http://localhost:5000/${employee.ProfilePhoto.replace(/\\/g, "/")}`}
+                            src={getAssetUrl(employee.ProfilePhoto)}
                             alt={employee.Name}
                             className="w-full h-full object-cover"
                             onError={(e) => {
@@ -191,7 +192,7 @@ const EmployeeDetails = () => {
                                         </span>
                                     </div>
                                     <a
-                                        href={`http://localhost:5000/${employee.Documents.BankPassbook.filepath.replace(/\\/g, "/")}`}
+                                        href={getAssetUrl(employee.Documents.BankPassbook.filepath)}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm"
@@ -216,7 +217,7 @@ const EmployeeDetails = () => {
                                         </span>
                                     </div>
                                     <a
-                                        href={`http://localhost:5000/${employee.Documents.AdhaarCard.filepath.replace(/\\/g, "/")}`}
+                                        href={getAssetUrl(employee.Documents.AdhaarCard.filepath)}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-orange-600 hover:text-orange-800 flex items-center gap-1 text-sm"
@@ -241,7 +242,7 @@ const EmployeeDetails = () => {
                                         </span>
                                     </div>
                                     <a
-                                        href={`http://localhost:5000/${employee.Documents.PANCard.filepath.replace(/\\/g, "/")}`}
+                                        href={getAssetUrl(employee.Documents.PANCard.filepath)}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 text-sm"
@@ -273,7 +274,7 @@ const EmployeeDetails = () => {
                                                 </div>
                                             </div>
                                             <a
-                                                href={`http://localhost:5000/${marksheet.filepath.replace(/\\/g, "/")}`}
+                                                href={getAssetUrl(marksheet.filepath)}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="text-green-600 hover:text-green-800 flex items-center gap-1 text-sm"
@@ -307,7 +308,7 @@ const EmployeeDetails = () => {
                                                 </div>
                                             </div>
                                             <a
-                                                href={`http://localhost:5000/${doc.filepath.replace(/\\/g, "/")}`}
+                                                href={getAssetUrl(doc.filepath)}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="text-purple-600 hover:text-purple-800 flex items-center gap-1 text-sm"

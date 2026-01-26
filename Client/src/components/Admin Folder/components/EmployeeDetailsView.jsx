@@ -1,5 +1,6 @@
 import React from 'react';
 import { FiX, FiUser, FiBriefcase, FiCreditCard, FiFileText, FiDownload } from 'react-icons/fi';
+import { getAssetUrl } from '../../../utils/config';
 
 const EmployeeDetailsView = ({ employee, onClose }) => {
     if (!employee) return null;
@@ -15,11 +16,11 @@ const EmployeeDetailsView = ({ employee, onClose }) => {
         if (!path) return "";
         if (typeof path !== 'string') {
             // Handle case where path is an object (e.g. from mongoose or file upload)
-            if (path.path) return `http://localhost:5000/${path.path.replace(/\\/g, "/")}`;
+            if (path.path) return getAssetUrl(path.path);
             if (path.url) return path.url;
             return "";
         }
-        return `http://localhost:5000/${path.replace(/\\/g, "/")}`;
+        return getAssetUrl(path);
     };
 
     const StatusBadge = ({ value }) => (
