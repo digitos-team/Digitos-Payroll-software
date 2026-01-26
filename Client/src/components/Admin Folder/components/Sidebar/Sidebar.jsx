@@ -1,13 +1,9 @@
 
 import React from 'react'
 import { useTheme } from '../../context/ThemeContext'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { NavLink, useNavigate } from 'react-router-dom'
-<<<<<<< HEAD
 import { Grid, MapPin, Layers, CreditCard, BarChart2, Settings, X, Sun, Moon, LogOut, Calendar, Users, Banknote } from 'lucide-react'
-=======
-import { Grid, MapPin, Layers, CreditCard, BarChart2, Settings, X, Sun, Moon, LogOut, Calendar, Users } from 'lucide-react'
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 import { logout } from '../../../redux/loginSlice'
 
 // import { logout } from '../../redux/loginSlice' // adjust path if needed
@@ -23,17 +19,26 @@ const links = [
     { to: '/reports', label: 'Reports', icon: BarChart2 },
     { to: '/settings', label: 'Settings', icon: Settings },
     { to: '/designation', label: 'Designations', icon: Layers },
-<<<<<<< HEAD
     { to: '/salary-requests', label: 'Salary Requests', icon: Calendar },
     { to: '/salary-settings', label: 'Salary Generation', icon: Banknote },
-=======
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 ]
 
 export default function Sidebar({ mobile = false, onClose }) {
     const { theme, toggleTheme } = useTheme()
     const dispatch = useDispatch()
     const navigate = useNavigate()
+    const { user } = useSelector((state) => state.auth || {})
+
+    // Filter links based on role
+    const filteredLinks = links.filter(link => {
+        if (user?.role === 'Employee') {
+            // Hide salary related links for employees
+            if (link.to === '/salary-settings' || link.to === '/salary-requests') {
+                return false
+            }
+        }
+        return true
+    })
 
     const handleLogout = () => {
         dispatch(logout())
@@ -64,7 +69,7 @@ export default function Sidebar({ mobile = false, onClose }) {
 
                 {/* Navigation Links */}
                 <nav className="flex flex-col gap-2">
-                    {links.map((l) => (
+                    {filteredLinks.map((l) => (
                         <NavLink
                             key={l.to}
                             to={l.to}

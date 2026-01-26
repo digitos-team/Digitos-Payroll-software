@@ -1,22 +1,14 @@
 import axiosInstance from '../../../../utils/axiosInstance';
 
 // -------------------- Get All Employees --------------------
-<<<<<<< HEAD
 export const getAllEmployees = async (companyId, role = "Employee") => {
-=======
-export const getAllEmployees = async (companyId) => {
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
   try {
     // Extract actual ID if companyId is an object
     const actualCompanyId = companyId?._id || companyId;
 
     const params = {
       CompanyId: actualCompanyId,
-<<<<<<< HEAD
-      role: role // Fetch based on passed role (default: Employee)
-=======
-      role: "Employee" // Strictly fetch only Employees
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
+      role: role // Fetch based on passed role
     };
 
     console.log("Fetching employees with params:", params);
@@ -35,11 +27,7 @@ export const getUserById = async (id) => {
   try {
     // FIXED: Use the correct endpoint with URL param
     const res = await axiosInstance.get(`/getuserbyid/${id}`);
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
     if (!res.data.user) {
       console.warn(`User with ID ${id} not found`);
       return { data: null, error: "User not found" };
@@ -77,11 +65,7 @@ export const updateUser = async (id, updatedData) => {
   try {
     // Check if updatedData is already FormData (from modal)
     let formData;
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
     if (updatedData instanceof FormData) {
       // Already FormData - use it directly
       console.log("Received FormData from modal");

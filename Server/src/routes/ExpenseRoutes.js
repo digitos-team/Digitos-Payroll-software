@@ -5,25 +5,15 @@ import {
   getExpenseById,
   updateExpense,
   deleteExpense,
-<<<<<<< HEAD
-  // updateExpenseStatus,
-=======
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
   getTotalExpense,
   getExpensesByOrder,
   getMonthlyExpenses,
   getMonthExpenses,
-<<<<<<< HEAD
-} from "../controller/ExpenseController.js";
-import { authorizeRoles, verifyToken } from "../Middleware/authMiddleware.js";
-import { upload, acceptAnyFile } from "../Middleware/upload.js";
-=======
   copyFixedExpenses,
   deferExpense,
 } from "../controller/ExpenseController.js";
 import { authorizeRoles, verifyToken } from "../Middleware/authMiddleware.js";
 import { acceptAnyFile } from "../Middleware/upload.js";
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 
 const ExpenseRoutes = express.Router();
 
@@ -61,14 +51,6 @@ ExpenseRoutes.delete(
   deleteExpense
 );
 
-<<<<<<< HEAD
-// ExpenseRoutes.put(
-//   "/expensestatus",
-//   updateExpenseStatus
-// );
-
-=======
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 // --------------------- ADMIN + CA ---------------------
 ExpenseRoutes.get(
   "/getallexpense",
@@ -112,8 +94,6 @@ ExpenseRoutes.get(
   getMonthExpenses
 );
 
-<<<<<<< HEAD
-=======
 ExpenseRoutes.post(
   "/copy-fixed",
   verifyToken,
@@ -128,5 +108,4 @@ ExpenseRoutes.put(
   deferExpense
 );
 
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 export { ExpenseRoutes };

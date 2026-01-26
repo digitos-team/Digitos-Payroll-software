@@ -14,10 +14,7 @@ export default function AddExpenseModal({ open, onClose, onAdd }) {
     const [receiptPreview, setReceiptPreview] = useState(null)
     const [orders, setOrders] = useState([])
     const [loadingOrders, setLoadingOrders] = useState(false)
-<<<<<<< HEAD
-=======
     const [isFixed, setIsFixed] = useState(false)
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 
     // Fetch orders when modal opens
     useEffect(() => {
@@ -92,13 +89,9 @@ export default function AddExpenseModal({ open, onClose, onAdd }) {
             ExpenseDate: expenseDate,
             PaymentMethod: paymentMethod,
             Description: description,
-<<<<<<< HEAD
-            Receipt: receipt,
-=======
             Description: description,
             Receipt: receipt,
             isFixed: isFixed,
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
         })
 
         // Reset form
@@ -223,8 +216,6 @@ export default function AddExpenseModal({ open, onClose, onAdd }) {
                         )}
                     </div>
 
-<<<<<<< HEAD
-=======
                     {/* Fixed Expense Checkbox */}
                     <div className="flex items-center gap-2 mt-2">
                         <input
@@ -239,7 +230,6 @@ export default function AddExpenseModal({ open, onClose, onAdd }) {
                         </label>
                     </div>
 
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
                     {/* Receipt Upload */}
                     <div>
                         <label className="text-sm text-gray-600">Upload Receipt</label>

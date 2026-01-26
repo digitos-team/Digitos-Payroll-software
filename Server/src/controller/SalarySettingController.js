@@ -1,9 +1,6 @@
 import mongoose from "mongoose";
 import { SalarySettings } from "../models/SalarySettingSchema.js";
-<<<<<<< HEAD
 import { SalaryConfigurationRequest } from "../models/SalaryConfigurationRequestSchema.js";
-=======
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 
 
 const addOrUpdateSalarySetting = async (req, res) => {
@@ -14,11 +11,6 @@ const addOrUpdateSalarySetting = async (req, res) => {
     console.log("=== SAVING SALARY SETTING ===");
     console.log("isTaxApplicable received:", isTaxApplicable);
     console.log("typeof isTaxApplicable:", typeof isTaxApplicable);
-<<<<<<< HEAD
-
-=======
-    
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
     // ... rest of code
     // 1️⃣ Find basic head (percentage == 0)
     const basicHead = SalaryHeads.find(
@@ -56,7 +48,6 @@ const addOrUpdateSalarySetting = async (req, res) => {
       EmployeeID,
     });
 
-<<<<<<< HEAD
     // 4️⃣ Check User Role & Handle accordingly
     const userRole = req.user.role;
     const requesterId = req.user._id;
@@ -123,8 +114,6 @@ const addOrUpdateSalarySetting = async (req, res) => {
 
     // IF ADMIN: Proceed with direct update/create (Existing Logic)
 
-=======
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
     if (existingSetting) {
       existingSetting.SalaryHeads = SalaryHeads;
       existingSetting.EffectFrom = EffectFrom || existingSetting.EffectFrom;
@@ -139,11 +128,7 @@ const addOrUpdateSalarySetting = async (req, res) => {
       });
     }
 
-<<<<<<< HEAD
     // 5️⃣ Create new setting
-=======
-    // 4️⃣ Create new setting
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
     const newSetting = await SalarySettings.create({
       CompanyId,
       EmployeeID,
@@ -180,11 +165,7 @@ const getSalarySettingsByCompany = async (req, res) => {
       CompanyId: new mongoose.Types.ObjectId(companyId),
     })
       .populate("EmployeeID", "Name Email")
-<<<<<<< HEAD
       .populate("SalaryHeads.SalaryHeadId", "SalaryHeadsTitle SalaryHeadsType ShortName");  // <-- FIXED
-=======
-     .populate("SalaryHeads.SalaryHeadId", "SalaryHeadsTitle SalaryHeadsType ShortName");  // <-- FIXED
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 
     if (settings.length === 0) {
       return res.status(404).json({ message: "No salary settings found" });
@@ -211,7 +192,6 @@ const deleteSalarySetting = async (req, res) => {
     });
   }
 };
-<<<<<<< HEAD
 // ➤ Fetch Salary Requests
 const fetchSalaryRequests = async (req, res) => {
   try {
@@ -310,18 +290,13 @@ const markNotificationRead = async (req, res) => {
 };
 
 
-=======
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 export {
   addOrUpdateSalarySetting,
   getSalarySettingsByCompany,
   deleteSalarySetting,
-<<<<<<< HEAD
   fetchSalaryRequests,
   approveSalaryRequest,
   rejectSalaryRequest,
   getHRNotifications,
   markNotificationRead
-=======
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 };

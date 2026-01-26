@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { MdClose } from 'react-icons/md';
 
 export default function ConfigureSalaryModal({ open, onClose, employee, salaryHeads, onSave }) {
+    const { user, role } = useSelector((state) => state.auth || {});
+    const currentRole = (role || user?.role || '').toLowerCase();
     const [salarySettings, setSalarySettings] = useState({});
     const [effectFrom, setEffectFrom] = useState(new Date().toISOString().split('T')[0]);
     const [isTaxApplicable, setIsTaxApplicable] = useState(false);
 
-<<<<<<< HEAD
     // Populate state when employee changes
     React.useEffect(() => {
         if (employee && employee.salarySettings) {
@@ -37,8 +39,6 @@ export default function ConfigureSalaryModal({ open, onClose, employee, salaryHe
         }
     }, [employee]);
 
-=======
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
     if (!open || !employee) return null;
 
     const handleInputChange = (headId, field, value) => {
@@ -200,11 +200,7 @@ export default function ConfigureSalaryModal({ open, onClose, employee, salaryHe
                             type="submit"
                             className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
                         >
-<<<<<<< HEAD
-                            Request Configuration Change
-=======
-                            Save Configuration
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
+                            {(currentRole === 'admin' || currentRole === 'ca') ? 'Save Configuration' : 'Request Configuration Change'}
                         </button>
                     </div>
                 </form>

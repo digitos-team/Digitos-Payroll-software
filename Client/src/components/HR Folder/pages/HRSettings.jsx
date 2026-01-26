@@ -19,6 +19,7 @@ import { getSalarySettings } from "../utils/api/SalaryAPi";
 import { fetchHRProfile, updateHRProfile } from "../utils/api/HRApi";
 import EditHRProfileModal from "../components/Modals/EditHRProfileModal";
 import { MdEdit } from "react-icons/md";
+import { getAssetUrl } from "../../../utils/config";
 
 export default function HRSettings() {
     const [loading, setLoading] = useState(true);
@@ -398,7 +399,7 @@ export default function HRSettings() {
                                                                 </div>
                                                                 {doc?.filepath && (
                                                                     <a
-                                                                        href={`http://localhost:5000/${doc.filepath.replace(/\\/g, "/")}`}
+                                                                        href={getAssetUrl(doc.filepath)}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
                                                                         className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
@@ -432,7 +433,7 @@ export default function HRSettings() {
                                                                         </div>
                                                                         {mark.filepath && (
                                                                             <a
-                                                                                href={`http://localhost:5000/${mark.filepath.replace(/\\/g, "/")}`}
+                                                                                href={getAssetUrl(mark.filepath)}
                                                                                 target="_blank"
                                                                                 rel="noopener noreferrer"
                                                                                 className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded hover:bg-purple-100 dark:bg-purple-900/30 dark:text-purple-400 dark:hover:bg-purple-900/50"
@@ -468,7 +469,7 @@ export default function HRSettings() {
                                                                         </div>
                                                                         {doc.filepath && (
                                                                             <a
-                                                                                href={`http://localhost:5000/${doc.filepath.replace(/\\/g, "/")}`}
+                                                                                href={getAssetUrl(doc.filepath)}
                                                                                 target="_blank"
                                                                                 rel="noopener noreferrer"
                                                                                 className="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50"

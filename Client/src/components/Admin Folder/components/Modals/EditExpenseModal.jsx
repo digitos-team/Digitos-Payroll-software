@@ -14,10 +14,7 @@ export default function EditExpenseModal({ open, onClose, onUpdate, expense }) {
     const [existingReceipt, setExistingReceipt] = useState(null)
     const [orders, setOrders] = useState([])
     const [loadingOrders, setLoadingOrders] = useState(false)
-<<<<<<< HEAD
-=======
     const [isFixed, setIsFixed] = useState(false)
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 
     // Populate form when expense changes
     useEffect(() => {
@@ -32,10 +29,7 @@ export default function EditExpenseModal({ open, onClose, onUpdate, expense }) {
             setExistingReceipt(expense.Receipt || null)
             setReceipt(null)
             setReceiptPreview(null)
-<<<<<<< HEAD
-=======
             setIsFixed(expense.isFixed || false)
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
         }
     }, [expense, open])
 
@@ -116,10 +110,7 @@ export default function EditExpenseModal({ open, onClose, onUpdate, expense }) {
             ExpenseDate: expenseDate,
             PaymentMethod: paymentMethod,
             Description: description,
-<<<<<<< HEAD
-=======
             isFixed: isFixed,
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
         }
 
         // Only include receipt if a new one was uploaded
@@ -236,8 +227,6 @@ export default function EditExpenseModal({ open, onClose, onUpdate, expense }) {
                         )}
                     </div>
 
-<<<<<<< HEAD
-=======
                     {/* Fixed Expense Checkbox */}
                     <div className="flex items-center gap-2 mt-2">
                         <input
@@ -252,7 +241,6 @@ export default function EditExpenseModal({ open, onClose, onUpdate, expense }) {
                         </label>
                     </div>
 
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
                     {/* Existing Receipt */}
                     {existingReceipt && !receipt && (
                         <div>

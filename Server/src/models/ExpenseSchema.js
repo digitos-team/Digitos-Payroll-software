@@ -38,13 +38,10 @@ const ExpenseSchema = new mongoose.Schema(
       enum: ["Cash", "Bank Transfer", "Cheque", "UPI", "Card"],
       default: "Bank Transfer",
     },
-<<<<<<< HEAD
-=======
     isFixed: {
       type: Boolean,
       default: false,
     },
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
     // VendorName: { type: String },
     // InvoiceNumber: { type: String },
     Description: { type: String },
@@ -66,5 +63,7 @@ const ExpenseSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+ExpenseSchema.index({ CompanyId: 1, Month: 1 });
 
 export const Expense = mongoose.model("Expense", ExpenseSchema);

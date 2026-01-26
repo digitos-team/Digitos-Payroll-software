@@ -8,15 +8,12 @@ const getCompanyId = () => {
 };
 
 // ==================== ADD EXPENSE ====================
-<<<<<<< HEAD
-=======
 export const copyFixedExpenses = async (data) => {
     const CompanyId = getCompanyId();
     const res = await axiosInstance.post("/copy-fixed", { ...data, CompanyId });
     return res.data;
 };
 
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 export const addExpense = async (expenseData) => {
     try {
         const CompanyId = getCompanyId();
@@ -36,10 +33,7 @@ export const addExpense = async (expenseData) => {
         if (expenseData.ExpenseType) formData.append("ExpenseType", expenseData.ExpenseType);
         if (expenseData.PaymentMethod) formData.append("PaymentMethod", expenseData.PaymentMethod);
         if (expenseData.Description) formData.append("Description", expenseData.Description);
-<<<<<<< HEAD
-=======
         if (expenseData.isFixed !== undefined) formData.append("isFixed", expenseData.isFixed);
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 
         // Append file if exists
         if (expenseData.Receipt) {
@@ -104,10 +98,7 @@ export const updateExpense = async (expenseId, expenseData) => {
         if (expenseData.ExpenseType) formData.append("ExpenseType", expenseData.ExpenseType);
         if (expenseData.PaymentMethod) formData.append("PaymentMethod", expenseData.PaymentMethod);
         if (expenseData.Description) formData.append("Description", expenseData.Description);
-<<<<<<< HEAD
-=======
         if (expenseData.isFixed !== undefined) formData.append("isFixed", expenseData.isFixed);
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 
         // Append new file if exists
         if (expenseData.Receipt && expenseData.Receipt instanceof File) {
@@ -137,8 +128,6 @@ export const deleteExpense = async (expenseId) => {
         throw err;
     }
 };
-<<<<<<< HEAD
-=======
 // ==================== DEFER EXPENSE ====================
 export const deferExpense = async (expenseId) => {
     try {
@@ -149,7 +138,6 @@ export const deferExpense = async (expenseId) => {
         throw err;
     }
 };
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 
 // ==================== GET TOTAL EXPENSE ====================
 export const getTotalExpense = async () => {

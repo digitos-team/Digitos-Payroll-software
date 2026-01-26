@@ -4,12 +4,10 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../../redux/loginSlice";
+import { API_URL } from "../../utils/config";
 
 import loginImage from "../../../assets/login_image.jpeg";
-<<<<<<< HEAD
-=======
 import logo from "../../../assets/Black Text Logo.jpeg";
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -32,7 +30,7 @@ export default function Login() {
     }
 
     try {
-      const res = await axios.post("http://localhost:5000/api/login", {
+      const res = await axios.post(`${API_URL}/login`, {
         Email: email,
         Password: password,
       });
@@ -97,8 +95,6 @@ export default function Login() {
 
           {/* Login Form */}
           <div className="w-full lg:w-1/2 flex flex-col justify-center p-8 sm:p-10 lg:p-12">
-<<<<<<< HEAD
-=======
             <div className="mb-6">
               <img
                 src={logo}
@@ -106,7 +102,6 @@ export default function Login() {
                 className="h-16 w-auto object-contain"
               />
             </div>
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
             <h3 className="text-3xl font-bold text-gray-800 mb-2">
               Hello, Welcome Back
             </h3>

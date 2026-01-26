@@ -1,9 +1,6 @@
 import mongoose from "mongoose";
 import { Expense } from "../models/ExpenseSchema.js";
-<<<<<<< HEAD
-=======
 import { createRecentActivity } from "./GetRecentActivities.js";
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 
 // -------------------- Add Expense --------------------
 const addExpense = async (req, res) => {
@@ -48,16 +45,11 @@ const addExpense = async (req, res) => {
       PaymentMethod: PaymentMethod || "Bank Transfer",
       Description,
       Receipt,
-<<<<<<< HEAD
-=======
       isFixed: req.body.isFixed || false,
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
     });
 
     await expense.save();
 
-<<<<<<< HEAD
-=======
     // Log activity
     await createRecentActivity({
       CompanyId,
@@ -66,7 +58,6 @@ const addExpense = async (req, res) => {
       target: `Expense: ${ExpenseTitle}`,
     });
 
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
     // ✅ REMOVED: Purchase creation logic
     // Purchases are only created when order is confirmed/paid in OrderController
 
@@ -155,13 +146,10 @@ const updateExpense = async (req, res) => {
     if (req.file) {
       updateData.Receipt = req.file.path.replace("\\", "/");
     }
-<<<<<<< HEAD
-=======
     // Ensure isFixed is updated if provided
     if (req.body.isFixed !== undefined) {
       updateData.isFixed = req.body.isFixed;
     }
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 
     // Update expense
     const updatedExpense = await Expense.findByIdAndUpdate(
@@ -170,8 +158,6 @@ const updateExpense = async (req, res) => {
       { new: true }
     );
 
-<<<<<<< HEAD
-=======
     // Log activity
     await createRecentActivity({
       CompanyId: updatedExpense.CompanyId,
@@ -180,7 +166,6 @@ const updateExpense = async (req, res) => {
       target: `Expense: ${updatedExpense.ExpenseTitle}`,
     });
 
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
     res.status(200).json({
       message: "Expense updated successfully",
       expense: updatedExpense,
@@ -201,8 +186,6 @@ const deleteExpense = async (req, res) => {
       return res.status(404).json({ message: "Expense not found" });
     }
 
-<<<<<<< HEAD
-=======
     // Log activity
     await createRecentActivity({
       CompanyId: expense.CompanyId,
@@ -211,7 +194,6 @@ const deleteExpense = async (req, res) => {
       target: `Expense: ${expense.ExpenseTitle}`,
     });
 
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
     res.status(200).json({ message: "Expense deleted successfully" });
   } catch (error) {
     console.error("Error in deleteExpense:", error);
@@ -452,8 +434,6 @@ const getMonthExpenses = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
-=======
 // -------------------- Copy Fixed Expenses --------------------
 const copyFixedExpenses = async (req, res) => {
   try {
@@ -578,7 +558,6 @@ const deferExpense = async (req, res) => {
   }
 };
 
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 export {
   addExpense,
   getAllExpenses,
@@ -589,9 +568,6 @@ export {
   getExpensesByOrder,
   getMonthlyExpenses,
   getMonthExpenses,
-<<<<<<< HEAD
-=======
   copyFixedExpenses,
   deferExpense,
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 };

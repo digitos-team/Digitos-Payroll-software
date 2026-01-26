@@ -9,19 +9,12 @@ import {
     MdExpandMore,
     MdExpandLess,
     MdPlayArrow,
-<<<<<<< HEAD
     MdDelete,
     MdNotifications
 } from 'react-icons/md';
 import ConfigureSalaryModal from '../components/Modals/ConfigureSalaryModal';
 import AddSalaryHeadModal from '../../Admin Folder/components/Modals/AddSalaryHeadModal';
 import { fetchSalaryHeads, addSalaryHead, deleteSalaryHead } from '../../../utils/api/salaryheads';
-=======
-    MdDelete
-} from 'react-icons/md';
-import ConfigureSalaryModal from '../components/Modals/ConfigureSalaryModal';
-import { fetchSalaryHeads } from '../../../utils/api/salaryheads';
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 import {
     addOrUpdateSalarySetting,
     calculateSalaryForAll,
@@ -29,14 +22,10 @@ import {
     getSalarySettings,
     generatePayslipPDF,
     getTotalSalaryDistribution,
-<<<<<<< HEAD
     deleteSalarySetting,
     getHRNotifications,
     markNotificationRead,
     fetchSalaryRequests
-=======
-    deleteSalarySetting
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 } from '../utils/api/SalaryAPi';
 import { getAllEmployees } from '../utils/api/EmployeeApi';
 
@@ -48,20 +37,14 @@ export default function SalarySetting() {
     const [salarySettings, setSalarySettings] = useState([]);
     const [generatedSlips, setGeneratedSlips] = useState({}); // { employeeId: slipData }
     const [isConfigureModalOpen, setIsConfigureModalOpen] = useState(false);
-<<<<<<< HEAD
     const [isAddSalaryHeadModalOpen, setIsAddSalaryHeadModalOpen] = useState(false);
-=======
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [loading, setLoading] = useState(false);
     const [generating, setGenerating] = useState(false);
     const [expandedSlip, setExpandedSlip] = useState(null);
     const [distribution, setDistribution] = useState(null);
-<<<<<<< HEAD
     const [notifications, setNotifications] = useState([]);
     const [pendingRequests, setPendingRequests] = useState([]);
-=======
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 
     const { companyId: reduxCompanyId } = useSelector((state) => state.auth || {});
     // Extract company ID - handle both object and string formats
@@ -82,28 +65,18 @@ export default function SalarySetting() {
                 setSalaryHeads(heads || []);
             } else if (activeTab === 'salary-settings') {
                 // Load employees, salary heads, and existing salary settings
-<<<<<<< HEAD
                 const [empRes, heads, settings, pendingReq] = await Promise.all([
                     getAllEmployees(targetCompanyId),
                     fetchSalaryHeads(targetCompanyId),
                     getSalarySettings(targetCompanyId),
                     fetchSalaryRequests(targetCompanyId)
-=======
-                const [empRes, heads, settings] = await Promise.all([
-                    getAllEmployees(targetCompanyId),
-                    fetchSalaryHeads(targetCompanyId),
-                    getSalarySettings(targetCompanyId)
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
                 ]);
 
                 const empList = Array.isArray(empRes?.data) ? empRes.data : (empRes?.data?.data || []);
                 const settingsList = settings || [];
-<<<<<<< HEAD
                 const pendingList = pendingReq?.data || [];
 
                 setPendingRequests(pendingList);
-=======
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 
                 // Merge employee data with salary settings (handle populated and unpopulated IDs)
                 const employeesWithSettings = empList.map((emp) => {
@@ -121,14 +94,11 @@ export default function SalarySetting() {
                 setSalarySettings(settingsList);
             } else if (activeTab === 'payslips') {
                 await loadPayslipData();
-<<<<<<< HEAD
             } else if (activeTab === 'notifications') {
                 const res = await getHRNotifications();
                 if (res.success) {
                     setNotifications(res.data);
                 }
-=======
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
             }
         } catch (error) {
             console.error('Failed to load data:', error);
@@ -287,7 +257,6 @@ export default function SalarySetting() {
 
     const handleSaveSalaryConfiguration = async (data) => {
         try {
-<<<<<<< HEAD
             const response = await addOrUpdateSalarySetting({ ...data, CompanyId: targetCompanyId });
 
             if (response.data && response.data.success === false) {
@@ -301,10 +270,6 @@ export default function SalarySetting() {
                 alert('Salary configuration saved successfully!');
             }
 
-=======
-            await addOrUpdateSalarySetting({ ...data, CompanyId: targetCompanyId });
-            alert('Salary configuration saved successfully!');
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
             setIsConfigureModalOpen(false);
             setSelectedEmployee(null);
             // Refresh relevant data regardless of current tab
@@ -342,7 +307,6 @@ export default function SalarySetting() {
         setExpandedSlip((prev) => (prev === empId ? null : empId));
     };
 
-<<<<<<< HEAD
     const handleAddSalaryHead = async (data) => {
         try {
             await addSalaryHead(data, targetCompanyId);
@@ -366,20 +330,15 @@ export default function SalarySetting() {
         }
     };
 
-=======
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
     // Helpers
     const hasConfiguration = (emp) => {
         return emp?.salarySettings && Array.isArray(emp.salarySettings.SalaryHeads) && emp.salarySettings.SalaryHeads.length > 0;
     };
 
-<<<<<<< HEAD
     const hasPendingRequest = (empId) => {
         return pendingRequests.some(req => req.EmployeeID?._id === empId || req.EmployeeID === empId);
     };
 
-=======
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
     const calculateTotals = (settings) => {
         if (!settings || !Array.isArray(settings.SalaryHeads)) return { earnings: 0, deductions: 0, net: 0 };
         let earnings = 0;
@@ -416,12 +375,8 @@ export default function SalarySetting() {
     const tabs = [
         { id: 'salary-heads', label: 'Salary Heads', icon: <MdAttachMoney size={20} /> },
         { id: 'salary-settings', label: 'Salary Settings', icon: <MdSettings size={20} /> },
-<<<<<<< HEAD
         { id: 'payslips', label: 'Payslip Management', icon: <MdReceipt size={20} /> },
         { id: 'notifications', label: 'Notifications', icon: <MdNotifications size={20} /> }
-=======
-        { id: 'payslips', label: 'Payslip Management', icon: <MdReceipt size={20} /> }
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
     ];
 
     return (
@@ -456,7 +411,6 @@ export default function SalarySetting() {
                 {/* Salary Heads Tab */}
                 {activeTab === 'salary-heads' && (
                     <div className="space-y-4">
-<<<<<<< HEAD
                         <div className="flex justify-between items-center mb-2">
                             <div>
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Salary Heads</h3>
@@ -469,11 +423,6 @@ export default function SalarySetting() {
                                 <MdAttachMoney />
                                 Add Salary Head
                             </button>
-=======
-                        <div>
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Salary Heads</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">View salary components like Basic, HRA, TA, etc.</p>
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
                         </div>
 
                         {loading ? (
@@ -484,7 +433,6 @@ export default function SalarySetting() {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {salaryHeads.map((head) => (
                                     <div key={head._id} className="border dark:border-gray-700 rounded-lg p-4 hover:shadow-lg transition-shadow">
-<<<<<<< HEAD
                                         <div className="flex justify-between items-start mb-2">
                                             <div>
                                                 <h4 className="font-semibold text-gray-900 dark:text-white">{head.SalaryHeadsTitle}</h4>
@@ -497,11 +445,6 @@ export default function SalarySetting() {
                                             >
                                                 <MdDelete size={20} />
                                             </button>
-=======
-                                        <div className="mb-2">
-                                            <h4 className="font-semibold text-gray-900 dark:text-white">{head.SalaryHeadsTitle}</h4>
-                                            <span className="text-sm text-gray-500 dark:text-gray-400">({head.ShortName})</span>
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
                                         </div>
                                         <div className="space-y-1 text-sm">
                                             <div className="flex justify-between">
@@ -560,7 +503,6 @@ export default function SalarySetting() {
                                                 <div className="flex gap-2">
                                                     <button
                                                         onClick={() => handleConfigureClick(emp)}
-<<<<<<< HEAD
                                                         disabled={hasPendingRequest(emp._id)}
                                                         className={`px-3 py-1 text-sm text-white rounded ${hasPendingRequest(emp._id)
                                                             ? 'bg-yellow-500 cursor-not-allowed'
@@ -568,11 +510,6 @@ export default function SalarySetting() {
                                                             }`}
                                                     >
                                                         {hasPendingRequest(emp._id) ? 'Request Sent' : 'Configure'}
-=======
-                                                        className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-                                                    >
-                                                        Configure
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
                                                     </button>
                                                     {emp.salarySettings && (
                                                         <button
@@ -839,7 +776,6 @@ export default function SalarySetting() {
                         )}
                     </div>
                 )}
-<<<<<<< HEAD
 
                 {/* Notifications Tab */}
                 {activeTab === 'notifications' && (
@@ -884,8 +820,6 @@ export default function SalarySetting() {
                         )}
                     </div>
                 )}
-=======
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
             </div>
 
             {/* Configure Salary Modal */}
@@ -899,7 +833,6 @@ export default function SalarySetting() {
                 salaryHeads={salaryHeads}
                 onSave={handleSaveSalaryConfiguration}
             />
-<<<<<<< HEAD
 
             {/* Add Salary Head Modal */}
             <AddSalaryHeadModal
@@ -907,8 +840,6 @@ export default function SalarySetting() {
                 onClose={() => setIsAddSalaryHeadModalOpen(false)}
                 onAdd={handleAddSalaryHead}
             />
-=======
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
         </div>
     );
 }

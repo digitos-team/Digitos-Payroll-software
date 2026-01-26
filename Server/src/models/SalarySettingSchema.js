@@ -27,11 +27,11 @@ const SalarySettingsSchema = new mongoose.Schema(
         },
         applicableValue: {
           type: Number, // Direct amount (like 20000)
-    
+
         },
         percentage: {
           type: Number, // e.g. 10 means 10% of base or parent head
-          
+
         },
       },
     ],
@@ -44,5 +44,7 @@ const SalarySettingsSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+SalarySettingsSchema.index({ CompanyId: 1, EmployeeID: 1 }, { unique: true });
 
 export const SalarySettings = mongoose.model("SalarySettings", SalarySettingsSchema);

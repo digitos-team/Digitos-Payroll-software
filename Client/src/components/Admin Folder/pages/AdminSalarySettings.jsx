@@ -40,13 +40,21 @@ export default function AdminSalarySettings() {
     const [distribution, setDistribution] = useState(null);
     const [selectedRole, setSelectedRole] = useState('HR'); // Default role
 
-    const { companyId: reduxCompanyId } = useSelector((state) => state.auth || {});
+    const { companyId: reduxCompanyId, user } = useSelector((state) => state.auth || {});
     const targetCompanyId = reduxCompanyId?._id || reduxCompanyId;
+    const userRole = user?.role;
 
     const [selectedMonth, setSelectedMonth] = useState(() => {
         const now = new Date();
         return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     });
+
+    // If user is HR, specifically only allow managing Employees
+    useEffect(() => {
+        if (userRole === 'HR') {
+            setSelectedRole('Employee');
+        }
+    }, [userRole]);
 
     const loadData = useCallback(async () => {
         if (!targetCompanyId) return;
@@ -334,18 +342,21 @@ export default function AdminSalarySettings() {
                     <p className="text-gray-500 dark:text-gray-400">Manage salaries for Employees, HR, and CA</p>
                 </div>
 
-                {/* Role Selector */}
-                <div className="flex items-center gap-3">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Select Role:</label>
-                    <select
-                        value={selectedRole}
-                        onChange={(e) => setSelectedRole(e.target.value)}
-                        className="border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    >
-                        <option value="HR">HR</option>
-                        <option value="CA">CA</option>
-                    </select>
-                </div>
+                {/* Role Selector - Only show if user is NOT HR */}
+                {userRole !== 'HR' && (
+                    <div className="flex items-center gap-3">
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Select Role:</label>
+                        <select
+                            value={selectedRole}
+                            onChange={(e) => setSelectedRole(e.target.value)}
+                            className="border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        >
+                            <option value="HR">HR</option>
+                            <option value="CA">CA</option>
+                            <option value="Employee">Employee</option>
+                        </select>
+                    </div>
+                )}
             </div>
 
             <div className="border-b border-gray-200 dark:border-gray-700">

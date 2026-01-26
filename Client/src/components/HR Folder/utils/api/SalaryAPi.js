@@ -52,7 +52,6 @@ export const deleteSalarySetting = async (id) => {
     });
 };
 
-<<<<<<< HEAD
 export const fetchSalaryRequests = async (overrideCompanyId = null) => {
     const companyId = overrideCompanyId || getCompanyId();
     try {
@@ -84,8 +83,6 @@ export const rejectSalaryRequest = async (requestId, reason) => {
     }
 };
 
-=======
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 export const calculateSalaryDetailed = async (employeeId, month, overrideCompanyId = null) => {
     const CompanyId = overrideCompanyId || getCompanyId();
     console.log("calculateSalaryDetailed - Sending:", { EmployeeID: employeeId, CompanyId, Month: month });
@@ -247,7 +244,6 @@ export const getTotalSalaryDistribution = async (month, overrideCompanyId = null
     }
 };
 
-<<<<<<< HEAD
 export const getHRNotifications = async () => {
     try {
         const response = await axiosInstance.get("/hr-notifications");
@@ -268,5 +264,3 @@ export const markNotificationRead = async (id) => {
     }
 };
 
-=======
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70

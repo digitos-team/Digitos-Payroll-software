@@ -3,15 +3,11 @@ import { Button } from "@mui/material";
 
 import AddExpenseModal from "../components/Modals/AddExpenseModal";
 import EditExpenseModal from "../components/Modals/EditExpenseModal";
-<<<<<<< HEAD
-import { addExpense, getAllExpenses, getExpensesByOrder, updateExpense, deleteExpense, getMonthExpenses } from "../../../utils/api/expenseapi";
-=======
 import { addExpense, getAllExpenses, getExpensesByOrder, updateExpense, deleteExpense, getMonthExpenses, copyFixedExpenses, deferExpense } from "../../../utils/api/expenseapi";
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 import { getOrdersApi } from "../../../utils/api/orderapi";
+import { BASE_URL } from "../../../utils/config";
 
 // Base URL for accessing uploaded files (without /api)
-const BASE_URL = "http://localhost:5000/";
 
 const Expenses = () => {
     const [openModal, setOpenModal] = useState(false);
@@ -106,8 +102,6 @@ const Expenses = () => {
         setMonthlyStats({ totalAmount: 0, count: 0, month: "" });
     };
 
-<<<<<<< HEAD
-=======
     const handleCopyFixedExpenses = async () => {
         if (!selectedMonth || !selectedYear) return;
 
@@ -149,7 +143,6 @@ const Expenses = () => {
         }
     };
 
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
     const handleAddExpense = async (data) => {
         try {
             const res = await addExpense(data);
@@ -242,13 +235,10 @@ const Expenses = () => {
             if (showOrderExpenses && selectedOrderId) {
                 handleOrderSelect(selectedOrderId);
             }
-<<<<<<< HEAD
-=======
             // Refresh monthly expenses if showing
             if (showMonthlyExpenses && selectedMonth && selectedYear) {
                 handleMonthlyFilter();
             }
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
             alert("Expense deleted successfully!");
         } catch (err) {
             console.error("Error deleting expense:", err);
@@ -256,8 +246,6 @@ const Expenses = () => {
         }
     };
 
-<<<<<<< HEAD
-=======
     // Handle defer expense
     const handleDeferExpense = async (expenseId) => {
         if (!window.confirm("Are you sure you want to defer this expense to the next month?")) {
@@ -282,7 +270,6 @@ const Expenses = () => {
         }
     };
 
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
     // Group expenses by type for summary
     const expenseSummary = expenseList.reduce((acc, expense) => {
         const type = expense.ExpenseType || "Other";
@@ -381,14 +368,6 @@ const Expenses = () => {
                         Apply Filter
                     </button>
                     {showMonthlyExpenses && (
-<<<<<<< HEAD
-                        <button
-                            onClick={handleClearMonthlyFilter}
-                            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm font-medium transition"
-                        >
-                            Clear Filter
-                        </button>
-=======
                         <>
                             <button
                                 onClick={handleCopyFixedExpenses}
@@ -404,7 +383,6 @@ const Expenses = () => {
                                 Clear Filter
                             </button>
                         </>
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
                     )}
                 </div>
             </div>
@@ -686,9 +664,6 @@ const Expenses = () => {
                             ) : (
                                 expenseList.map((item) => (
                                     <tr key={item._id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-<<<<<<< HEAD
-                                        <td className="p-3 border font-medium">{item.ExpenseTitle}</td>
-=======
                                         <td className="p-3 border font-medium">
                                             {item.ExpenseTitle}
                                             {item.isFixed && (
@@ -697,7 +672,6 @@ const Expenses = () => {
                                                 </span>
                                             )}
                                         </td>
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
                                         <td className="p-3 border">
                                             <span className={`px-2 py-1 rounded text-xs ${item.ExpenseType === 'Salary' ? 'bg-blue-100 text-blue-800' :
                                                 item.ExpenseType === 'Operational' ? 'bg-green-100 text-green-800' :
@@ -757,8 +731,6 @@ const Expenses = () => {
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                     </svg>
                                                 </button>
-<<<<<<< HEAD
-=======
                                                 <button
                                                     onClick={() => handleDeferExpense(item._id)}
                                                     className="p-1.5 rounded bg-orange-100 hover:bg-orange-200 text-orange-600 transition"
@@ -768,7 +740,6 @@ const Expenses = () => {
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
                                                 </button>
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
                                             </div>
                                         </td>
                                     </tr>
@@ -795,11 +766,7 @@ const Expenses = () => {
                 onUpdate={handleUpdateExpense}
                 expense={selectedExpense}
             />
-<<<<<<< HEAD
-        </div>
-=======
         </div >
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
     );
 };
 

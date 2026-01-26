@@ -20,11 +20,8 @@ import Purchase from "../pages/Purchase";
 import Expenses from "../pages/Expenses";
 import Holidays from "../pages/Holidays";
 import LeaveSettings from "../pages/LeaveSettings";
-<<<<<<< HEAD
 import AdminSalaryRequests from "../pages/SalaryRequests";
 import AdminSalarySettings from "../pages/AdminSalarySettings";
-=======
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
 
 // CA Imports
 import CADashboard from "../../CA folder/pages/CADashboard";
@@ -81,11 +78,8 @@ const AdminRoutes = () => (
     <Route path="purchase" element={<Purchase />} />
     <Route path="expenses" element={<Expenses />} />
     <Route path="expenses" element={<Expenses />} />
-<<<<<<< HEAD
     <Route path="salary-requests" element={<AdminSalaryRequests />} />
     <Route path="salary-settings" element={<AdminSalarySettings />} />
-=======
->>>>>>> eaefe27d612e3aba8cfde7d3a657375969450f70
   </Route>
 );
 
@@ -106,6 +100,7 @@ const CARoutes = () => [
     path="/ca/view-reports"
     element={<CAReports />}
   />,
+  <Route key="ca-salary-settings" path="/ca/salary-settings" element={<AdminSalarySettings />} />,
   <Route key="ca-redirect" path="*" element={<Navigate to="/ca" replace />} />,
 ];
 
