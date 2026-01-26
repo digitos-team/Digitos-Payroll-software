@@ -8,6 +8,12 @@ const getCompanyId = () => {
 };
 
 // ==================== ADD EXPENSE ====================
+export const copyFixedExpenses = async (data) => {
+    const CompanyId = getCompanyId();
+    const res = await axiosInstance.post("/copy-fixed", { ...data, CompanyId });
+    return res.data;
+};
+
 export const addExpense = async (expenseData) => {
     try {
         const CompanyId = getCompanyId();
@@ -27,6 +33,7 @@ export const addExpense = async (expenseData) => {
         if (expenseData.ExpenseType) formData.append("ExpenseType", expenseData.ExpenseType);
         if (expenseData.PaymentMethod) formData.append("PaymentMethod", expenseData.PaymentMethod);
         if (expenseData.Description) formData.append("Description", expenseData.Description);
+        if (expenseData.isFixed !== undefined) formData.append("isFixed", expenseData.isFixed);
 
         // Append file if exists
         if (expenseData.Receipt) {
@@ -91,6 +98,7 @@ export const updateExpense = async (expenseId, expenseData) => {
         if (expenseData.ExpenseType) formData.append("ExpenseType", expenseData.ExpenseType);
         if (expenseData.PaymentMethod) formData.append("PaymentMethod", expenseData.PaymentMethod);
         if (expenseData.Description) formData.append("Description", expenseData.Description);
+        if (expenseData.isFixed !== undefined) formData.append("isFixed", expenseData.isFixed);
 
         // Append new file if exists
         if (expenseData.Receipt && expenseData.Receipt instanceof File) {

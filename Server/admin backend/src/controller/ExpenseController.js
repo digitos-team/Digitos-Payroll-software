@@ -44,6 +44,7 @@ const addExpense = async (req, res) => {
       PaymentMethod: PaymentMethod || "Bank Transfer",
       Description,
       Receipt,
+      isFixed: req.body.isFixed || false,
     });
 
     await expense.save();
@@ -135,6 +136,10 @@ const updateExpense = async (req, res) => {
     const updateData = { ...req.body };
     if (req.file) {
       updateData.Receipt = req.file.path.replace("\\", "/");
+    }
+    // Ensure isFixed is updated if provided
+    if (req.body.isFixed !== undefined) {
+      updateData.isFixed = req.body.isFixed;
     }
 
     // Update expense
@@ -404,6 +409,95 @@ const getMonthExpenses = async (req, res) => {
   }
 };
 
+// -------------------- Copy Fixed Expenses --------------------
+const copyFixedExpenses = async (req, res) => {
+  try {
+    const { CompanyId, targetMonth, targetYear } = req.body;
+
+    if (!CompanyId || !targetMonth || !targetYear) {
+      return res.status(400).json({ message: "CompanyId, targetMonth, and targetYear are required" });
+    }
+
+    const tMonth = parseInt(targetMonth);
+    const tYear = parseInt(targetYear);
+
+    // Calculate previous month
+    let prevMonth = tMonth - 1;
+    let prevYear = tYear;
+    if (prevMonth === 0) {
+      prevMonth = 12;
+      prevYear = tYear - 1;
+    }
+
+    // Find fixed expenses from previous month
+    const startDate = new Date(prevYear, prevMonth - 1, 1);
+    const endDate = new Date(prevYear, prevMonth, 1);
+
+    const fixedExpenses = await Expense.find({
+      CompanyId,
+      isFixed: true,
+      ExpenseDate: { $gte: startDate, $lt: endDate },
+    });
+
+    if (fixedExpenses.length === 0) {
+      return res.status(200).json({ message: "No fixed expenses found in the previous month", count: 0 });
+    }
+
+    let copiedCount = 0;
+    const newExpenses = [];
+
+    for (const expense of fixedExpenses) {
+      // Create new date for the target month (preserve day if possible)
+      const originalDate = new Date(expense.ExpenseDate);
+      const day = originalDate.getDate();
+      // Handle edge cases (e.g., Jan 31 -> Feb 28)
+      const newDate = new Date(tYear, tMonth - 1, day);
+
+      // Check if already exists in target month to avoid duplicates
+      // We check for same title, same amount, same type in the target month
+      const exists = await Expense.findOne({
+        CompanyId,
+        ExpenseTitle: expense.ExpenseTitle,
+        Amount: expense.Amount,
+        ExpenseType: expense.ExpenseType,
+        ExpenseDate: {
+          $gte: new Date(tYear, tMonth - 1, 1),
+          $lt: new Date(tYear, tMonth, 1),
+        }
+      });
+
+      if (!exists) {
+        newExpenses.push({
+          CompanyId,
+          ExpenseTitle: expense.ExpenseTitle,
+          Amount: expense.Amount,
+          ExpenseDate: newDate,
+          ExpenseType: expense.ExpenseType,
+          PaymentMethod: expense.PaymentMethod,
+          Description: expense.Description,
+          isFixed: true, // Keep it fixed for next month too
+          AddedBy: req.user?._id, // Current user
+          OrderId: expense.OrderId, // Keep order link if any
+        });
+        copiedCount++;
+      }
+    }
+
+    if (newExpenses.length > 0) {
+      await Expense.insertMany(newExpenses);
+    }
+
+    res.status(200).json({
+      message: `Successfully copied ${copiedCount} fixed expenses`,
+      count: copiedCount,
+    });
+
+  } catch (error) {
+    console.error("Error in copyFixedExpenses:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 export {
   addExpense,
   getAllExpenses,
@@ -414,4 +508,5 @@ export {
   getExpensesByOrder,
   getMonthlyExpenses,
   getMonthExpenses,
+  copyFixedExpenses,
 };

@@ -14,6 +14,7 @@ export default function AddExpenseModal({ open, onClose, onAdd }) {
     const [receiptPreview, setReceiptPreview] = useState(null)
     const [orders, setOrders] = useState([])
     const [loadingOrders, setLoadingOrders] = useState(false)
+    const [isFixed, setIsFixed] = useState(false)
 
     // Fetch orders when modal opens
     useEffect(() => {
@@ -88,7 +89,9 @@ export default function AddExpenseModal({ open, onClose, onAdd }) {
             ExpenseDate: expenseDate,
             PaymentMethod: paymentMethod,
             Description: description,
+            Description: description,
             Receipt: receipt,
+            isFixed: isFixed,
         })
 
         // Reset form
@@ -211,6 +214,20 @@ export default function AddExpenseModal({ open, onClose, onAdd }) {
                         {!loadingOrders && orders.length === 0 && (
                             <p className="text-xs text-gray-400 mt-1">No orders available</p>
                         )}
+                    </div>
+
+                    {/* Fixed Expense Checkbox */}
+                    <div className="flex items-center gap-2 mt-2">
+                        <input
+                            type="checkbox"
+                            id="isFixed"
+                            checked={isFixed}
+                            onChange={(e) => setIsFixed(e.target.checked)}
+                            className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                        />
+                        <label htmlFor="isFixed" className="text-sm text-gray-700 select-none">
+                            Mark as Fixed Expense (Recurring)
+                        </label>
                     </div>
 
                     {/* Receipt Upload */}

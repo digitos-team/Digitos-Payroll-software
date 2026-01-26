@@ -14,6 +14,7 @@ export default function EditExpenseModal({ open, onClose, onUpdate, expense }) {
     const [existingReceipt, setExistingReceipt] = useState(null)
     const [orders, setOrders] = useState([])
     const [loadingOrders, setLoadingOrders] = useState(false)
+    const [isFixed, setIsFixed] = useState(false)
 
     // Populate form when expense changes
     useEffect(() => {
@@ -26,8 +27,10 @@ export default function EditExpenseModal({ open, onClose, onUpdate, expense }) {
             setPaymentMethod(expense.PaymentMethod || 'Bank Transfer')
             setDescription(expense.Description || '')
             setExistingReceipt(expense.Receipt || null)
+            setExistingReceipt(expense.Receipt || null)
             setReceipt(null)
             setReceiptPreview(null)
+            setIsFixed(expense.isFixed || false)
         }
     }, [expense, open])
 
@@ -107,7 +110,9 @@ export default function EditExpenseModal({ open, onClose, onUpdate, expense }) {
             Amount: Number(amount),
             ExpenseDate: expenseDate,
             PaymentMethod: paymentMethod,
+            PaymentMethod: paymentMethod,
             Description: description,
+            isFixed: isFixed,
         }
 
         // Only include receipt if a new one was uploaded
@@ -222,6 +227,20 @@ export default function EditExpenseModal({ open, onClose, onUpdate, expense }) {
                                 ))}
                             </select>
                         )}
+                    </div>
+
+                    {/* Fixed Expense Checkbox */}
+                    <div className="flex items-center gap-2 mt-2">
+                        <input
+                            type="checkbox"
+                            id="editIsFixed"
+                            checked={isFixed}
+                            onChange={(e) => setIsFixed(e.target.checked)}
+                            className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                        />
+                        <label htmlFor="editIsFixed" className="text-sm text-gray-700 select-none">
+                            Mark as Fixed Expense (Recurring)
+                        </label>
                     </div>
 
                     {/* Existing Receipt */}

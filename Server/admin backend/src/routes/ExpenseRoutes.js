@@ -5,14 +5,14 @@ import {
   getExpenseById,
   updateExpense,
   deleteExpense,
-  // updateExpenseStatus,
   getTotalExpense,
   getExpensesByOrder,
   getMonthlyExpenses,
   getMonthExpenses,
+  copyFixedExpenses,
 } from "../controller/ExpenseController.js";
 import { authorizeRoles, verifyToken } from "../Middleware/authMiddleware.js";
-import { upload, acceptAnyFile } from "../Middleware/upload.js";
+import { acceptAnyFile } from "../Middleware/upload.js";
 
 const ExpenseRoutes = express.Router();
 
@@ -49,11 +49,6 @@ ExpenseRoutes.delete(
   authorizeRoles("Admin"),
   deleteExpense
 );
-
-// ExpenseRoutes.put(
-//   "/expensestatus",
-//   updateExpenseStatus
-// );
 
 // --------------------- ADMIN + CA ---------------------
 ExpenseRoutes.get(
@@ -96,6 +91,13 @@ ExpenseRoutes.get(
   // verifyToken,
   // authorizeRoles("Admin", "CA"),
   getMonthExpenses
+);
+
+ExpenseRoutes.post(
+  "/copy-fixed",
+  verifyToken,
+  authorizeRoles("Admin"),
+  copyFixedExpenses
 );
 
 export { ExpenseRoutes };

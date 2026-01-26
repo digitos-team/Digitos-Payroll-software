@@ -38,6 +38,10 @@ const ExpenseSchema = new mongoose.Schema(
       enum: ["Cash", "Bank Transfer", "Cheque", "UPI", "Card"],
       default: "Bank Transfer",
     },
+    isFixed: {
+      type: Boolean,
+      default: false,
+    },
     // VendorName: { type: String },
     // InvoiceNumber: { type: String },
     Description: { type: String },

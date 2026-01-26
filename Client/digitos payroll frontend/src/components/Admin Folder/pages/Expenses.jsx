@@ -3,7 +3,7 @@ import { Button } from "@mui/material";
 
 import AddExpenseModal from "../components/Modals/AddExpenseModal";
 import EditExpenseModal from "../components/Modals/EditExpenseModal";
-import { addExpense, getAllExpenses, getExpensesByOrder, updateExpense, deleteExpense, getMonthExpenses } from "../../../utils/api/expenseapi";
+import { addExpense, getAllExpenses, getExpensesByOrder, updateExpense, deleteExpense, getMonthExpenses, copyFixedExpenses } from "../../../utils/api/expenseapi";
 import { getOrdersApi } from "../../../utils/api/orderapi";
 
 // Base URL for accessing uploaded files (without /api)
@@ -102,6 +102,47 @@ const Expenses = () => {
         setMonthlyStats({ totalAmount: 0, count: 0, month: "" });
     };
 
+    const handleCopyFixedExpenses = async () => {
+        if (!selectedMonth || !selectedYear) return;
+
+        if (!window.confirm(`Are you sure you want to copy fixed expenses from the previous month to ${selectedMonth}/${selectedYear}?`)) {
+            return;
+        }
+
+        try {
+            // We need companyId, assuming it's available in context or we can pass a dummy one if backend handles it from token
+            // But backend expects CompanyId in body. 
+            // Let's check how addExpense gets CompanyId. It gets it from getCompanyId() in api wrapper.
+            // So we just need to pass targetMonth and targetYear.
+            // Wait, the API wrapper for copyFixedExpenses takes 'data'.
+            // We need to construct the data object.
+            // The backend expects { CompanyId, targetMonth, targetYear }.
+            // The API wrapper `copyFixedExpenses` calls `axios.post`.
+            // We should let the API wrapper handle CompanyId if possible, but `addExpense` wrapper handles it.
+            // Let's update `copyFixedExpenses` in `expenseapi.js` to inject CompanyId too?
+            // Or we can just pass it here if we have it. 
+            // `Expenses.jsx` doesn't seem to have `companyId` in state.
+            // Let's update `expenseapi.js` to inject CompanyId like `addExpense` does.
+            // For now, I'll assume `expenseapi.js` was updated or I will update it.
+            // Actually, I updated `expenseapi.js` to just pass `data`. 
+            // I should update `expenseapi.js` to inject CompanyId.
+            // Let's do that in a separate step.
+
+            // For now, let's call the API.
+            const res = await copyFixedExpenses({
+                targetMonth: selectedMonth,
+                targetYear: selectedYear
+            });
+
+            alert(res.message);
+            // Refresh monthly expenses
+            handleMonthlyFilter();
+        } catch (err) {
+            console.error("Error copying fixed expenses:", err);
+            alert("Failed to copy fixed expenses.");
+        }
+    };
+
     const handleAddExpense = async (data) => {
         try {
             const res = await addExpense(data);
@@ -193,6 +234,10 @@ const Expenses = () => {
             // Also refresh order expenses if showing
             if (showOrderExpenses && selectedOrderId) {
                 handleOrderSelect(selectedOrderId);
+            }
+            // Refresh monthly expenses if showing
+            if (showMonthlyExpenses && selectedMonth && selectedYear) {
+                handleMonthlyFilter();
             }
             alert("Expense deleted successfully!");
         } catch (err) {
@@ -299,12 +344,21 @@ const Expenses = () => {
                         Apply Filter
                     </button>
                     {showMonthlyExpenses && (
-                        <button
-                            onClick={handleClearMonthlyFilter}
-                            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm font-medium transition"
-                        >
-                            Clear Filter
-                        </button>
+                        <>
+                            <button
+                                onClick={handleCopyFixedExpenses}
+                                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm font-medium transition"
+                                title="Copy fixed expenses from previous month"
+                            >
+                                Copy Fixed Expenses
+                            </button>
+                            <button
+                                onClick={handleClearMonthlyFilter}
+                                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm font-medium transition"
+                            >
+                                Clear Filter
+                            </button>
+                        </>
                     )}
                 </div>
             </div>
@@ -586,7 +640,14 @@ const Expenses = () => {
                             ) : (
                                 expenseList.map((item) => (
                                     <tr key={item._id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                                        <td className="p-3 border font-medium">{item.ExpenseTitle}</td>
+                                        <td className="p-3 border font-medium">
+                                            {item.ExpenseTitle}
+                                            {item.isFixed && (
+                                                <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] bg-purple-100 text-purple-700 font-semibold border border-purple-200">
+                                                    Fixed
+                                                </span>
+                                            )}
+                                        </td>
                                         <td className="p-3 border">
                                             <span className={`px-2 py-1 rounded text-xs ${item.ExpenseType === 'Salary' ? 'bg-blue-100 text-blue-800' :
                                                 item.ExpenseType === 'Operational' ? 'bg-green-100 text-green-800' :
@@ -672,7 +733,7 @@ const Expenses = () => {
                 onUpdate={handleUpdateExpense}
                 expense={selectedExpense}
             />
-        </div>
+        </div >
     );
 };
 
