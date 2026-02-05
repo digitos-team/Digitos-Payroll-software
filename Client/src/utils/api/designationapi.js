@@ -17,9 +17,7 @@ export const getDesignationsByCompany = async () => {
   try {
     const CompanyId = getCompanyId();
     if (!CompanyId) return { data: { success: false, data: [] } };
-    console.log("Fetching designations for CompanyId:", CompanyId);
     const res = await axiosInstance.post("/getdesignationbycompany", { CompanyId });
-    console.log("Designations API response:", res.data);
     // Backend returns { success: true, data: [...] }
     return res;
   } catch (err) {
@@ -33,12 +31,11 @@ export const getDesignationsByCompany = async () => {
 
 // 3. Delete Designation
 export const deleteDesignation = async (DesignationId) => {
-  console.log("deleteDesignation function called with ID:", DesignationId);
-  console.log("Full URL will be:", axiosInstance.defaults.baseURL + `/deletedesignation/${DesignationId}`);
+
 
   try {
     const response = await axiosInstance.delete(`/deletedesignation/${DesignationId}`);
-    console.log("Delete response received:", response);
+
     return response;
   } catch (error) {
     console.error("Delete API error:", error);

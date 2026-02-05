@@ -48,24 +48,6 @@ export default function DashboardHome() {
             getTotalRevenue(actualCompanyId),
           ]);
 
-        console.log("Dashboard API responses:", {
-          branches:
-            branchRes.status === "fulfilled"
-              ? branchRes.value
-              : branchRes.reason,
-          employees:
-            employeeRes.status === "fulfilled"
-              ? employeeRes.value
-              : employeeRes.reason,
-          payroll:
-            payrollRes.status === "fulfilled"
-              ? payrollRes.value
-              : payrollRes.reason,
-          revenue:
-            revenueRes.status === "fulfilled"
-              ? revenueRes.value
-              : revenueRes.reason,
-        });
 
         // Use backend data if available, otherwise fallback to context/calculated values
         let branchCount = branches.length;
@@ -90,10 +72,6 @@ export default function DashboardHome() {
           totalPayroll = branches.reduce((sum, b) => {
             return sum + (parseFloat(b.totalSalary) || 0);
           }, 0);
-          console.log(
-            "Fallback: Calculated payroll from branches:",
-            totalPayroll
-          );
         }
 
         // Try backend revenue - returns { totalRevenue: number }
@@ -101,12 +79,6 @@ export default function DashboardHome() {
           totalRevenue = revenueRes.value.totalRevenue;
         }
 
-        console.log("Dashboard final totals:", {
-          branchCount,
-          employeeCount,
-          totalPayroll,
-          totalRevenue,
-        });
 
         setTotals({
           totalBranches: branchCount,
@@ -117,7 +89,6 @@ export default function DashboardHome() {
 
 
       } catch (err) {
-        console.error("Error fetching totals:", err);
         // Last resort: use context data
         setTotals({
           totalBranches: branches.length,
@@ -222,10 +193,9 @@ export default function DashboardHome() {
       ]);
 
       setCompanyModalOpen(false);
-      console.log("Branch added successfully:", res.data);
+
       toast.success("Branch added successfully!");
     } catch (err) {
-      console.error("Error adding branch:", err);
       toast.error(
         "Failed to add branch: " + (err.response?.data?.message || err.message)
       );
@@ -270,7 +240,6 @@ export default function DashboardHome() {
       }));
 
     } catch (err) {
-      console.error("Error adding employee:", err);
       const serverMessage =
         err.response?.data?.message || err.response?.data || err.message;
       toast.error("Failed to add employee: " + (serverMessage || "Unknown error"));

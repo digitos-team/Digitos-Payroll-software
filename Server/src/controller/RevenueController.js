@@ -46,7 +46,7 @@ const addRevenue = async (req, res) => {
 const getAllRevenue = async (req, res) => {
   try {
     const { CompanyId } = req.query;
-console.log("QUERY CompanyId:", CompanyId);
+
 
     const filter = {};
     if (CompanyId) {
@@ -164,7 +164,7 @@ const getTotalRevenue = async (req, res) => {
 
     const result = await Revenue.aggregate([
       {
-        $match: { 
+        $match: {
           CompanyId: new mongoose.Types.ObjectId(CompanyId) // ✅ FIXED: uppercase CompanyId + ObjectId conversion
         }
       },

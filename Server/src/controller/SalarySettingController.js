@@ -8,9 +8,7 @@ const addOrUpdateSalarySetting = async (req, res) => {
     let { CompanyId, EmployeeID, EffectFrom, SalaryHeads, isTaxApplicable } = req.body;
 
     // DEBUG
-    console.log("=== SAVING SALARY SETTING ===");
-    console.log("isTaxApplicable received:", isTaxApplicable);
-    console.log("typeof isTaxApplicable:", typeof isTaxApplicable);
+
     // ... rest of code
     // 1️⃣ Find basic head (percentage == 0)
     const basicHead = SalaryHeads.find(
@@ -52,7 +50,7 @@ const addOrUpdateSalarySetting = async (req, res) => {
     const userRole = req.user.role;
     const requesterId = req.user._id;
 
-    console.log(`Processing salary update for Role: ${userRole}, User: ${requesterId}`);
+
 
     // LOGIC: If HR, create a request. If Admin, update directly.
     if (userRole === "HR") {

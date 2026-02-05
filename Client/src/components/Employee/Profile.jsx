@@ -80,19 +80,15 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchEmployeeData = async () => {
-      console.log('🔍 PROFILE - Starting to fetch employee data');
-      console.log('🔍 PROFILE - User from Redux:', user);
-
       const userId = user?.id || user?._id;
-      console.log('🔍 PROFILE - User ID:', userId);
 
       try {
         setLoading(true);
         setError(null);
 
-        console.log('🔍 PROFILE - Calling getEmployeeById with ID:', userId);
+
         const response = await getEmployeeById(userId);
-        console.log('🔍 PROFILE - Employee data received:', response);
+
 
         setEmployeeData(response);
       } catch (err) {

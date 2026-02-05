@@ -10,8 +10,10 @@ import {
   requestSalarySlip,
   updateSalarySlipRequest,
   getSalarySlipRequests,
-  calculateSalary,         // Added
-  calculateSalaryForAll    // Added
+  calculateSalary,
+  calculateSalaryForAll,
+  previewSalary,
+  exportMonthlySalaryCSV
 } from "../controller/SalaryCalculateController.js";
 import { verifyToken } from "../Middleware/authMiddleware.js";
 let SalaryRoutes = express.Router();
@@ -19,6 +21,8 @@ let SalaryRoutes = express.Router();
 // SalaryRoutes.post("/calculatesalarybycompany", calculateSalaryByCompany);
 // SalaryRoutes.post("/calculatesalarybycompany", calculateSalaryByCompany);
 SalaryRoutes.post("/calculatesalarydetailed", calculateSalary);
+SalaryRoutes.post("/preview-salary", previewSalary);
+SalaryRoutes.post("/export-monthly-salary-csv", exportMonthlySalaryCSV);
 SalaryRoutes.post("/gettotalsalarydistribution", getTotalSalaryDistribution);
 SalaryRoutes.post("/calculatesalaryforall", calculateSalaryForAll);
 SalaryRoutes.get("/departmentwisesalary", getDepartmentWiseSalaryDistribution);

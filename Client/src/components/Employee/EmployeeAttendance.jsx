@@ -45,8 +45,8 @@ const EmployeeAttendance = () => {
         Object.values(data).forEach(status => {
             if (status === 'Present') present++;
             else if (status === 'Absent') absent++;
-            else if (status === 'Half Day') halfDay++;
-            else if (status === 'Leave' || status === 'Paid Leave' || status === 'Unpaid Leave') leave++;
+            else if (status === 'HalfDay') halfDay++;
+            else if (status === 'PaidLeave' || status === 'UnpaidLeave') leave++;
         });
         setStats({ present, absent, halfDay, leave });
     };
@@ -75,10 +75,9 @@ const EmployeeAttendance = () => {
         switch (status) {
             case 'Present': return 'bg-green-100 text-green-700 border-green-200';
             case 'Absent': return 'bg-red-100 text-red-700 border-red-200';
-            case 'Half Day': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-            case 'Leave':
-            case 'Paid Leave':
-            case 'Unpaid Leave': return 'bg-blue-100 text-blue-700 border-blue-200';
+            case 'HalfDay': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+            case 'PaidLeave':
+            case 'UnpaidLeave': return 'bg-blue-100 text-blue-700 border-blue-200';
             default: return 'bg-gray-50 text-gray-400 border-gray-100';
         }
     };
@@ -87,7 +86,7 @@ const EmployeeAttendance = () => {
         switch (status) {
             case 'Present': return <CheckCircle className="w-4 h-4" />;
             case 'Absent': return <XCircle className="w-4 h-4" />;
-            case 'Half Day': return <Clock className="w-4 h-4" />;
+            case 'HalfDay': return <Clock className="w-4 h-4" />;
             default: return null;
         }
     };

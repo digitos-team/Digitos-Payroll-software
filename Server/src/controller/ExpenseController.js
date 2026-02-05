@@ -17,9 +17,7 @@ const addExpense = async (req, res) => {
       Description,
     } = req.body;
 
-    console.log("Incoming Expense Data:", req.body);
-    console.log("Authenticated user:", req.user);
-    console.log("Uploaded file:", req.file);
+
 
     // Validate required fields
     if (!ExpenseTitle || !Amount || !ExpenseDate || !CompanyId) {
@@ -29,10 +27,10 @@ const addExpense = async (req, res) => {
       });
     }
 
-    console.log("Authenticated user:", req.user);
+
 
     const Receipt = req.file ? req.file.path.replace("\\", "/") : null;
-    console.log("File uploaded:", req.file);
+
 
     const expense = new Expense({
       ExpenseTitle,
@@ -51,12 +49,12 @@ const addExpense = async (req, res) => {
     await expense.save();
 
     // Log activity
-    await createRecentActivity({
-      CompanyId,
-      userId: req.user._id,
-      action: "Added Expense",
-      target: `Expense: ${ExpenseTitle}`,
-    });
+    // await createRecentActivity({
+    //   CompanyId,
+    //   userId: req.user._id,
+    //   action: "Added Expense",
+    //   target: `Expense: ${ExpenseTitle}`,
+    // });
 
     // ✅ REMOVED: Purchase creation logic
     // Purchases are only created when order is confirmed/paid in OrderController
@@ -159,12 +157,12 @@ const updateExpense = async (req, res) => {
     );
 
     // Log activity
-    await createRecentActivity({
-      CompanyId: updatedExpense.CompanyId,
-      userId: req.user._id,
-      action: "Updated Expense",
-      target: `Expense: ${updatedExpense.ExpenseTitle}`,
-    });
+    // await createRecentActivity({
+    //   CompanyId: updatedExpense.CompanyId,
+    //   userId: req.user._id,
+    //   action: "Updated Expense",
+    //   target: `Expense: ${updatedExpense.ExpenseTitle}`,
+    // });
 
     res.status(200).json({
       message: "Expense updated successfully",
@@ -187,12 +185,12 @@ const deleteExpense = async (req, res) => {
     }
 
     // Log activity
-    await createRecentActivity({
-      CompanyId: expense.CompanyId,
-      userId: req.user._id,
-      action: "Deleted Expense",
-      target: `Expense: ${expense.ExpenseTitle}`,
-    });
+    // await createRecentActivity({
+    //   CompanyId: expense.CompanyId,
+    //   userId: req.user._id,
+    //   action: "Deleted Expense",
+    //   target: `Expense: ${expense.ExpenseTitle}`,
+    // });
 
     res.status(200).json({ message: "Expense deleted successfully" });
   } catch (error) {
@@ -540,13 +538,7 @@ const deferExpense = async (req, res) => {
     expense.ExpenseDate = currentDate;
     await expense.save();
 
-    // Log activity
-    await createRecentActivity({
-      CompanyId: expense.CompanyId,
-      userId: req.user._id,
-      action: "Deferred Expense",
-      target: `Expense: ${expense.ExpenseTitle}`,
-    });
+
 
     res.status(200).json({
       message: "Expense deferred to next month successfully",

@@ -19,6 +19,8 @@ import {
     addOrUpdateSalarySetting,
     calculateSalaryForAll,
     calculateSalaryDetailed,
+    previewSalary,
+    exportMonthlySalaryCSV,
     getSalarySettings,
     generatePayslipPDF,
     getTotalSalaryDistribution,
@@ -250,6 +252,28 @@ export default function SalarySetting() {
         }
     };
 
+    const handleExportCSV = async () => {
+        if (!selectedMonth) {
+            alert('Please select a month first');
+            return;
+        }
+        try {
+            const blob = await exportMonthlySalaryCSV(selectedMonth, targetCompanyId);
+            const url = window.URL.createObjectURL(new Blob([blob]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `salary_report_${selectedMonth}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Failed to export CSV:', error);
+            alert('Failed to export CSV: ' + (error?.response?.data?.message || error?.message || 'No salary data found for this month'));
+        }
+    };
+
+
     const handleConfigureClick = (employee) => {
         setSelectedEmployee(employee);
         setIsConfigureModalOpen(true);
@@ -303,8 +327,24 @@ export default function SalarySetting() {
         }
     };
 
-    const toggleSlipExpand = (empId) => {
+    const toggleSlipExpand = async (empId) => {
+        const isExpanding = expandedSlip !== empId;
         setExpandedSlip((prev) => (prev === empId ? null : empId));
+
+        // If expanding and no generated slip exists yet, call preview
+        if (isExpanding && !generatedSlips[empId]) {
+            try {
+                const previewData = await previewSalary(empId, selectedMonth, targetCompanyId);
+                if (previewData && previewData.success) {
+                    setGeneratedSlips((prev) => ({
+                        ...prev,
+                        [empId]: { ...previewData.data, isPreview: true }
+                    }));
+                }
+            } catch (error) {
+                console.error('Failed to load salary preview:', error);
+            }
+        }
     };
 
     const handleAddSalaryHead = async (data) => {
@@ -456,10 +496,6 @@ export default function SalarySetting() {
                                                     {head.SalaryHeadsType}
                                                 </span>
                                             </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-600 dark:text-gray-400">Method:</span>
-                                                <span className="text-gray-900 dark:text-white">{head.SalaryCalcultateMethod}</span>
-                                            </div>
                                             {head.DependOn && (
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-600 dark:text-gray-400">Depends On:</span>
@@ -497,7 +533,7 @@ export default function SalarySetting() {
                                                     <h4 className="font-semibold text-gray-900 dark:text-white">{emp.Name}</h4>
                                                     <p className="text-sm text-gray-500 dark:text-gray-400">{emp.Email}</p>
                                                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                                                        {emp.Department} - {emp.Designation}
+                                                        {[emp.Department, emp.Designation].filter(Boolean).join(' - ')}
                                                     </p>
                                                 </div>
                                                 <div className="flex gap-2">
@@ -558,6 +594,13 @@ export default function SalarySetting() {
                                     <MdRefresh className={generating ? 'animate-spin' : ''} />
                                     {generating ? 'Generating...' : 'Generate Payslips'}
                                 </button>
+                                <button
+                                    onClick={handleExportCSV}
+                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                >
+                                    <MdDownload />
+                                    Export CSV
+                                </button>
                             </div>
                         </div>
 
@@ -603,7 +646,7 @@ export default function SalarySetting() {
                                                 </div>
                                                 <div>
                                                     <h5 className="font-semibold text-gray-900 dark:text-white">{emp.Name}</h5>
-                                                    <p className="text-sm text-gray-500 dark:text-gray-400">{emp.Department} - {emp.Designation}</p>
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">{[emp.Department, emp.Designation].filter(Boolean).join(' - ')}</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-4">
@@ -670,6 +713,39 @@ export default function SalarySetting() {
                                                                 </div>
                                                             </div>
                                                         </div>
+
+                                                        {/* Attendance Summary - only show when slip is generated */}
+                                                        {generatedSlips[emp._id]?.attendanceSummary && (
+                                                            <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+                                                                <h6 className="font-medium text-purple-700 dark:text-purple-300 mb-3">Attendance Summary</h6>
+                                                                <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+                                                                    {/* <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-lg">
+                                                                        <p className="text-xs text-gray-500 dark:text-gray-400">Working Days</p>
+                                                                        <p className="text-lg font-bold text-gray-900 dark:text-white">{generatedSlips[emp._id].attendanceSummary.totalWorkingDays || 0}</p>
+                                                                    </div> */}
+                                                                    <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-lg">
+                                                                        <p className="text-xs text-gray-500 dark:text-gray-400">Present</p>
+                                                                        <p className="text-lg font-bold text-green-600 dark:text-green-400">{generatedSlips[emp._id].attendanceSummary.presentDays || 0}</p>
+                                                                    </div>
+                                                                    <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-lg">
+                                                                        <p className="text-xs text-gray-500 dark:text-gray-400">Paid Leaves</p>
+                                                                        <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{generatedSlips[emp._id].attendanceSummary.paidLeaves || 0}</p>
+                                                                    </div>
+                                                                    <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-lg">
+                                                                        <p className="text-xs text-gray-500 dark:text-gray-400">Half Days</p>
+                                                                        <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{generatedSlips[emp._id].attendanceSummary.halfDays || 0}</p>
+                                                                    </div>
+                                                                    <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-lg">
+                                                                        <p className="text-xs text-gray-500 dark:text-gray-400">Unpaid Leaves</p>
+                                                                        <p className="text-lg font-bold text-red-600 dark:text-red-400">{generatedSlips[emp._id].attendanceSummary.unpaidLeaves || 0}</p>
+                                                                    </div>
+                                                                    <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-lg">
+                                                                        <p className="text-xs text-gray-500 dark:text-gray-400">Leave Deduction</p>
+                                                                        <p className="text-lg font-bold text-red-600 dark:text-red-400">₹{(generatedSlips[emp._id].attendanceSummary.leaveDeductionAmount || 0).toLocaleString()}</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
 
                                                         {/* Summary */}
                                                         <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">

@@ -15,6 +15,7 @@ const AddOrderModal = ({ open, onClose, onAdd, onUpdate, mode = "add", defaultVa
     phone: "",
     clientGSTIN: "",
     clientState: "",
+    clientAddress: "",
     serviceTitle: "",
     description: "",
     hsnCode: "998314",
@@ -55,6 +56,7 @@ const AddOrderModal = ({ open, onClose, onAdd, onUpdate, mode = "add", defaultVa
         phone: defaultValues.ClientPhone || "",
         clientGSTIN: defaultValues.ClientGSTIN || "",
         clientState: defaultValues.ClientState || "",
+        clientAddress: defaultValues.ClientAddress || "",
         serviceTitle: defaultValues.ServiceTitle || "",
         description: defaultValues.ServiceDescription || "",
         hsnCode: defaultValues.HSNCode || "998314",
@@ -109,6 +111,7 @@ const AddOrderModal = ({ open, onClose, onAdd, onUpdate, mode = "add", defaultVa
       ClientPhone: form.phone,
       ClientGSTIN: form.clientGSTIN || undefined,
       ClientState: form.clientState || undefined,
+      ClientAddress: form.clientAddress || undefined,
       ServiceTitle: form.serviceTitle,
       ServiceDescription: form.description,
       HSNCode: form.hsnCode,
@@ -136,6 +139,7 @@ const AddOrderModal = ({ open, onClose, onAdd, onUpdate, mode = "add", defaultVa
       phone: "",
       clientGSTIN: "",
       clientState: "",
+      clientAddress: "",
       serviceTitle: "",
       description: "",
       hsnCode: "998314",
@@ -196,6 +200,17 @@ const AddOrderModal = ({ open, onClose, onAdd, onUpdate, mode = "add", defaultVa
                 onChange={handleChange}
                 placeholder="Phone"
                 className="border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                disabled={isPaid}
+              />
+            </div>
+            <div className="mt-3">
+              <textarea
+                name="clientAddress"
+                value={form.clientAddress}
+                onChange={handleChange}
+                placeholder="Address"
+                className="border p-2 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                rows={2}
                 disabled={isPaid}
               />
             </div>

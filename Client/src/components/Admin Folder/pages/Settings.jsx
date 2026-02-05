@@ -28,7 +28,7 @@ export default function Settings() {
   useEffect(() => {
     const loadProfile = async () => {
       const data = await getAdminProfile();
-      console.log("data:" + data);
+
 
       if (data && data.length > 0) {
         const profile = data[0];

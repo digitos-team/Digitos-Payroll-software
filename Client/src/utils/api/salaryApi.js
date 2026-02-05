@@ -28,7 +28,6 @@ export const getSalaryHistory = async (EmployeeID, CompanyId) => {
  */
 export const requestSlipApproval = async (EmployeeID, Month, CompanyId) => {
     try {
-        console.log('📤 API - Requesting slip approval:', { EmployeeID, Month, CompanyId });
 
         const res = await axiosInstance.post("/requestsalaryslip", {
             EmployeeID,
@@ -36,7 +35,6 @@ export const requestSlipApproval = async (EmployeeID, Month, CompanyId) => {
             CompanyId,
         });
 
-        console.log('✅ API - Request response:', res.data);
         return res.data;
     } catch (err) {
         console.error("❌ API - Error requesting salary slip:", err);
@@ -63,7 +61,6 @@ export const requestSlipApproval = async (EmployeeID, Month, CompanyId) => {
  */
 export const downloadSlipPDF = async (EmployeeID, Month) => {
     try {
-        console.log('📥 API - Downloading slip PDF:', { EmployeeID, Month });
 
         const res = await axiosInstance.post(
             "/generatesalaryslippdf",
@@ -81,7 +78,6 @@ export const downloadSlipPDF = async (EmployeeID, Month) => {
         link.remove();
         window.URL.revokeObjectURL(url);
 
-        console.log('✅ API - Download successful');
         return { success: true };
     } catch (err) {
         console.error("❌ API - Error downloading salary slip:", err);
@@ -116,26 +112,18 @@ export const downloadSlipPDF = async (EmployeeID, Month) => {
  */
 export const getRequestStatus = async (EmployeeID, Month, CompanyId) => {
     try {
-        console.log('📤 API - Getting request status:', { EmployeeID, Month, CompanyId });
-        console.log('📤 API - Parameter types:', {
-            EmployeeIDType: typeof EmployeeID,
-            MonthType: typeof Month,
-            CompanyIdType: typeof CompanyId
-        });
-        console.log('📤 API - Exact values:', JSON.stringify({ EmployeeID, Month, CompanyId }, null, 2));
+
 
         const res = await axiosInstance.get("/getsalaryslipRequests", {
             params: { EmployeeID, Month, CompanyId }
         });
-
-        console.log('✅ API - Status response:', res.data);
 
         // Return the first matching request or default 'none' status
         const requests = res.data?.data || [];
 
         if (requests.length > 0) {
             const request = requests[0];
-            console.log(`✅ API - Found request for ${Month}:`, request.status);
+
             return {
                 status: request.status,
                 requestedAt: request.requestedAt,
@@ -145,7 +133,7 @@ export const getRequestStatus = async (EmployeeID, Month, CompanyId) => {
             };
         }
 
-        console.log(`ℹ️ API - No request found for ${Month}, returning 'none'`);
+
         return { status: 'none' };
     } catch (err) {
         console.error("❌ API - Error fetching request status:", err);

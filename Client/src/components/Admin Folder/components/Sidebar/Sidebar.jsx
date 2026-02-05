@@ -37,6 +37,12 @@ export default function Sidebar({ mobile = false, onClose }) {
                 return false
             }
         }
+
+        // Hide Salary Generation for CA
+        if (user?.role === 'CA' && link.to === '/salary-settings') {
+            return false
+        }
+
         return true
     })
 

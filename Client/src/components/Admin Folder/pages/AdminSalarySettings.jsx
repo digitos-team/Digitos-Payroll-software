@@ -18,6 +18,8 @@ import {
     addOrUpdateSalarySetting,
     calculateSalaryForAll,
     calculateSalaryDetailed,
+    previewSalary,
+    exportMonthlySalaryCSV,
     getSalarySettings,
     generatePayslipPDF,
     getTotalSalaryDistribution,
@@ -269,9 +271,47 @@ export default function AdminSalarySettings() {
         }
     };
 
-    const toggleSlipExpand = (empId) => {
+    const toggleSlipExpand = async (empId) => {
+        const isExpanding = expandedSlip !== empId;
         setExpandedSlip((prev) => (prev === empId ? null : empId));
+
+        // Auto-preview when expanding
+        if (isExpanding && !generatedSlips[empId]) {
+            try {
+                const result = await previewSalary(empId, selectedMonth, targetCompanyId);
+                if (result && result.success && result.data) {
+                    setGeneratedSlips((prev) => ({
+                        ...prev,
+                        [empId]: result.data
+                    }));
+                }
+            } catch (error) {
+                console.error('Failed to preview salary:', error);
+            }
+        }
     };
+
+    const handleExportCSV = async () => {
+        if (!selectedMonth) {
+            alert('Please select a month first');
+            return;
+        }
+        try {
+            const blob = await exportMonthlySalaryCSV(selectedMonth, targetCompanyId);
+            const url = window.URL.createObjectURL(new Blob([blob]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `salary_report_${selectedMonth}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Failed to export CSV:', error);
+            alert('Failed to export CSV: ' + (error?.response?.data?.message || error?.message || 'No salary data found for this month'));
+        }
+    };
+
 
     const handleAddSalaryHead = async (data) => {
         try {
@@ -451,7 +491,7 @@ export default function AdminSalarySettings() {
                                                     <h4 className="font-semibold text-gray-900 dark:text-white">{emp.Name}</h4>
                                                     <p className="text-sm text-gray-500 dark:text-gray-400">{emp.Email}</p>
                                                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                                                        {emp.Department} - {emp.Designation}
+                                                        {[emp.Department, emp.Designation].filter(Boolean).join(' - ')}
                                                     </p>
                                                 </div>
                                                 <div className="flex gap-2">
@@ -502,6 +542,13 @@ export default function AdminSalarySettings() {
                                     <MdRefresh className={generating ? 'animate-spin' : ''} />
                                     {generating ? 'Generating...' : 'Generate Payslips'}
                                 </button>
+                                <button
+                                    onClick={handleExportCSV}
+                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                >
+                                    <MdDownload />
+                                    Export CSV
+                                </button>
                             </div>
                         </div>
 
@@ -529,21 +576,173 @@ export default function AdminSalarySettings() {
 
                                         {expandedSlip === emp._id && (
                                             <div className="p-4 border-t dark:border-gray-700">
-                                                {/* Reusing detailed view logic simpler here for brevity */}
-                                                <div className="flex justify-end gap-2">
-                                                    <button
-                                                        onClick={() => handleGenerateIndividualPayslip(emp._id, emp.Name)}
-                                                        className="px-4 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700"
-                                                    >
-                                                        Generate Slip
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDownloadPayslip(emp._id)}
-                                                        className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-                                                    >
-                                                        Download PDF
-                                                    </button>
-                                                </div>
+                                                {hasConfiguration(emp) ? (
+                                                    <div className="space-y-4">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            {/* Earnings */}
+                                                            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                                                                <h6 className="font-medium text-green-700 dark:text-green-300 mb-3">Earnings</h6>
+                                                                <div className="space-y-2">
+                                                                    {(generatedSlips[emp._id]?.Earnings?.length > 0) ? (
+                                                                        generatedSlips[emp._id].Earnings.map((earn, idx) => (
+                                                                            <div key={idx} className="flex justify-between text-sm">
+                                                                                <span className="text-gray-600 dark:text-gray-400">{earn.title} ({earn.shortName})</span>
+                                                                                <span className="text-gray-900 dark:text-white font-medium">₹{(earn.amount || 0).toLocaleString()}</span>
+                                                                            </div>
+                                                                        ))
+                                                                    ) : emp.salarySettings?.SalaryHeads?.filter(h => getHeadType(h) === 'Earnings').length > 0 ? (
+                                                                        emp.salarySettings.SalaryHeads.filter(h => getHeadType(h) === 'Earnings').map((head, idx) => (
+                                                                            <div key={idx} className="flex justify-between text-sm">
+                                                                                <span className="text-gray-600 dark:text-gray-400">{getHeadName(head)}</span>
+                                                                                <span className="text-gray-900 dark:text-white font-medium">₹{(head.applicableValue || head.Amount || 0).toLocaleString()}</span>
+                                                                            </div>
+                                                                        ))
+                                                                    ) : (
+                                                                        <p className="text-sm text-gray-500 dark:text-gray-400">No earnings configured</p>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Deductions */}
+                                                            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
+                                                                <h6 className="font-medium text-red-700 dark:text-red-300 mb-3">Deductions</h6>
+                                                                <div className="space-y-2">
+                                                                    {(generatedSlips[emp._id]?.Deductions?.length > 0) ? (
+                                                                        generatedSlips[emp._id].Deductions.map((ded, idx) => (
+                                                                            <div key={idx} className="flex justify-between text-sm">
+                                                                                <span className="text-gray-600 dark:text-gray-400">{ded.title} ({ded.shortName})</span>
+                                                                                <span className="text-gray-900 dark:text-white font-medium">₹{(ded.amount || 0).toLocaleString()}</span>
+                                                                            </div>
+                                                                        ))
+                                                                    ) : emp.salarySettings?.SalaryHeads?.filter(h => getHeadType(h) === 'Deductions').length > 0 ? (
+                                                                        emp.salarySettings.SalaryHeads.filter(h => getHeadType(h) === 'Deductions').map((head, idx) => (
+                                                                            <div key={idx} className="flex justify-between text-sm">
+                                                                                <span className="text-gray-600 dark:text-gray-400">{getHeadName(head)}</span>
+                                                                                <span className="text-gray-900 dark:text-white font-medium">₹{(head.applicableValue || head.Amount || 0).toLocaleString()}</span>
+                                                                            </div>
+                                                                        ))
+                                                                    ) : (
+                                                                        <p className="text-sm text-gray-500 dark:text-gray-400">No deductions</p>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Attendance Summary - only show when slip is generated */}
+                                                        {generatedSlips[emp._id]?.attendanceSummary && (
+                                                            <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+                                                                <h6 className="font-medium text-purple-700 dark:text-purple-300 mb-3">Attendance Summary</h6>
+                                                                <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+                                                                    {/* <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-lg">
+                                                                        <p className="text-xs text-gray-500 dark:text-gray-400">Working Days</p>
+                                                                        <p className="text-lg font-bold text-gray-900 dark:text-white">{generatedSlips[emp._id].attendanceSummary.totalWorkingDays || 0}</p>
+                                                                    </div> */}
+                                                                    <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-lg">
+                                                                        <p className="text-xs text-gray-500 dark:text-gray-400">Present</p>
+                                                                        <p className="text-lg font-bold text-green-600 dark:text-green-400">{generatedSlips[emp._id].attendanceSummary.presentDays || 0}</p>
+                                                                    </div>
+                                                                    <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-lg">
+                                                                        <p className="text-xs text-gray-500 dark:text-gray-400">Paid Leaves</p>
+                                                                        <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{generatedSlips[emp._id].attendanceSummary.paidLeaves || 0}</p>
+                                                                    </div>
+                                                                    <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-lg">
+                                                                        <p className="text-xs text-gray-500 dark:text-gray-400">Half Days</p>
+                                                                        <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{generatedSlips[emp._id].attendanceSummary.halfDays || 0}</p>
+                                                                    </div>
+                                                                    <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-lg">
+                                                                        <p className="text-xs text-gray-500 dark:text-gray-400">Unpaid Leaves</p>
+                                                                        <p className="text-lg font-bold text-red-600 dark:text-red-400">{generatedSlips[emp._id].attendanceSummary.unpaidLeaves || 0}</p>
+                                                                    </div>
+                                                                    <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-lg">
+                                                                        <p className="text-xs text-gray-500 dark:text-gray-400">Leave Deduction</p>
+                                                                        <p className="text-lg font-bold text-red-600 dark:text-red-400">₹{(generatedSlips[emp._id].attendanceSummary.leaveDeductionAmount || 0).toLocaleString()}</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Summary */}
+                                                        <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                                                            {generatedSlips[emp._id] ? (
+                                                                <>
+                                                                    <div className="mb-3 text-center">
+                                                                        <span className="px-2 py-1 text-xs bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 rounded">
+                                                                            ✓ Slip Generated for {selectedMonth}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="grid grid-cols-4 gap-4 text-center">
+                                                                        <div>
+                                                                            <p className="text-sm text-gray-500 dark:text-gray-400">Gross Salary</p>
+                                                                            <p className="text-xl font-bold text-gray-900 dark:text-white">₹{(generatedSlips[emp._id].grossSalary || 0).toLocaleString()}</p>
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="text-sm text-gray-500 dark:text-gray-400">Deductions</p>
+                                                                            <p className="text-xl font-bold text-red-600 dark:text-red-400">-₹{(generatedSlips[emp._id].totalDeductions || 0).toLocaleString()}</p>
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="text-sm text-gray-500 dark:text-gray-400">Tax</p>
+                                                                            <p className="text-xl font-bold text-orange-600 dark:text-orange-400">-₹{(generatedSlips[emp._id].TaxAmount || 0).toLocaleString()}</p>
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="text-sm text-gray-500 dark:text-gray-400">Net Salary</p>
+                                                                            <p className="text-xl font-bold text-green-600 dark:text-green-400">₹{(generatedSlips[emp._id].netSalary || 0).toLocaleString()}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <div className="mb-3 text-center">
+                                                                        <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300 rounded">
+                                                                            Click "Generate Payslip" to calculate salary
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="grid grid-cols-3 gap-4 text-center">
+                                                                        <div>
+                                                                            <p className="text-sm text-gray-500 dark:text-gray-400">Gross Salary</p>
+                                                                            <p className="text-xl font-bold text-gray-900 dark:text-white">₹{calculateTotals(emp.salarySettings).earnings.toLocaleString()}</p>
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="text-sm text-gray-500 dark:text-gray-400">Total Deductions</p>
+                                                                            <p className="text-xl font-bold text-red-600 dark:text-red-400">-₹{calculateTotals(emp.salarySettings).deductions.toLocaleString()}</p>
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="text-sm text-gray-500 dark:text-gray-400">Net Salary</p>
+                                                                            <p className="text-xl font-bold text-green-600 dark:text-green-400">₹{calculateTotals(emp.salarySettings).net.toLocaleString()}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </>
+                                                            )}
+                                                        </div>
+
+                                                        <div className="flex justify-end gap-2 mt-4">
+                                                            <button
+                                                                onClick={() => handleGenerateIndividualPayslip(emp._id, emp.Name)}
+                                                                disabled={generating}
+                                                                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700 disabled:opacity-50"
+                                                            >
+                                                                <MdPlayArrow />
+                                                                {generating ? 'Generating...' : 'Generate Slip'}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDownloadPayslip(emp._id)}
+                                                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                                                            >
+                                                                <MdDownload />
+                                                                Download PDF
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-center py-4">
+                                                        <p className="text-gray-500 dark:text-gray-400 mb-3">No salary configuration found for this employee.</p>
+                                                        <button
+                                                            onClick={() => handleConfigureClick(emp)}
+                                                            className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                                                        >
+                                                            Configure Now
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </div>

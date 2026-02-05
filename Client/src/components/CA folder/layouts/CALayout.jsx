@@ -27,7 +27,6 @@ const links = [
   { to: '/ca/tax-slab', label: 'Tax Slab', icon: FileText },
   { to: '/ca/view-payroll', label: 'View Payroll', icon: Users },
   { to: '/ca/view-reports', label: 'View Reports', icon: FileText },
-  { to: '/ca/salary-settings', label: 'Salary Generation', icon: DollarSign },
 ]
 
 function CASidebar({ mobile = false, onClose }) {

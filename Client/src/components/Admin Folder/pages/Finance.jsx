@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import QuickActionCard from "../components/QuickActionCard/QuickActionCard";
 import PayrollTrends from "../components/Charts/PayrollTrends";
 
+
 import SalaryPayable from "../components/Finance/SalaryPayable";
 import { CreditCard, DollarSign, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -16,11 +17,6 @@ import { fetchTaxSlabs, addTaxSlab } from "../../../utils/api/taxslabapi";
 import { addRevenue as addRevenueApi } from "../../../utils/api/revenueapi";
 
 export default function Finance() {
-  const [salaryItems, setSalaryItems] = useState([
-    { id: 1, employee: "Aditi", amount: 45000, due: "2025-11-30" },
-    { id: 2, employee: "Ravi", amount: 52000, due: "2025-11-30" },
-  ]);
-
   const navigate = useNavigate();
   const { branches = [], addExpense, addRevenue, orders = [] } = useBranches();
 
@@ -99,18 +95,18 @@ export default function Finance() {
       onClick: () => navigate("/expenses"),
     },
     {
-      title: "Manage Purchase",
-      desc: "View and manage purchases",
-      Icon: CreditCard,
-      color: "bg-indigo-500",
-      onClick: () => navigate("/purchase"),
-    },
-    {
       title: "Add Order",
       desc: "Create new client order",
       Icon: FileText,
       color: "bg-blue-500",
       onClick: () => navigate("/orders"),
+    },
+    {
+      title: "Manage Sales",
+      desc: "View and manage sales",
+      Icon: DollarSign,
+      color: "bg-emerald-500",
+      onClick: () => navigate("/manage-sales"),
     },
   ];
 
@@ -147,12 +143,14 @@ export default function Finance() {
             </div>
           </section>
 
-          {/* 📌 FULL WIDTH PAYROLL TRENDS */}
+          {/* 📌 PAYROLL TRENDS */}
           <section>
             <div className="w-full bg-white rounded-2xl shadow-md hover:shadow-lg p-6">
               <PayrollTrends />
             </div>
           </section>
+
+
         </>
       )}
 

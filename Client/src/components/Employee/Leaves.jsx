@@ -30,10 +30,8 @@ const Leaves = () => {
 
     const loadData = async () => {
         if (!actualCompanyId || !userId) {
-            console.log("❌ Leaves: Missing ID", { actualCompanyId, userId });
             return;
         }
-        console.log("🚀 Leaves: Loading data for", { actualCompanyId, userId });
         setLoading(true);
         try {
             const results = await Promise.allSettled([
@@ -44,7 +42,7 @@ const Leaves = () => {
 
             const [balanceResult, leavesResult, holidaysResult] = results;
 
-            console.log("📊 Leaves: API Results", { balanceResult, leavesResult, holidaysResult });
+
 
             if (balanceResult.status === 'fulfilled' && balanceResult.value.success) {
                 setBalance(balanceResult.value.data);
@@ -53,7 +51,7 @@ const Leaves = () => {
             }
 
             if (leavesResult.status === 'fulfilled' && leavesResult.value && (leavesResult.value.success || Array.isArray(leavesResult.value))) {
-                console.log("✅ Leaves: Setting leaves state", leavesResult.value.data || leavesResult.value);
+
                 setLeaves(leavesResult.value.data || leavesResult.value || []);
             } else {
                 console.error("❌ Failed to load user leaves:", leavesResult.reason);

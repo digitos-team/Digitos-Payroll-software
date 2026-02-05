@@ -213,14 +213,14 @@ const changeCompanyPassword = async (req, res) => {
     const { password } = req.body;
     const adminId = req.user._id; // Assuming verifyToken middleware populates this
 
-    console.log("Change Password Request:", { adminId, hasPassword: !!password });
+
 
     if (!password) {
       return res.status(400).json({ message: "New password is required" });
     }
 
     const company = await Company.findById(adminId);
-    console.log("Admin Company Found:", !!company);
+
 
     if (!company) {
       return res.status(404).json({ message: "Admin account not found" });

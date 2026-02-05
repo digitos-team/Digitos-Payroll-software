@@ -41,7 +41,7 @@ export default function PayrollTrends() {
 
       // ================= ORDER vs EXPENSE (FIXED HERE) =================
       const ordExpTrend = await getOrderVsExpenseTrend();
-      console.log('Order vs expense raw:', ordExpTrend);
+
 
       // Handle both shapes:
       // 1) [{ Month, orders, expense }]
@@ -62,7 +62,7 @@ export default function PayrollTrends() {
       );
 
       setOrderData(sortedOrder);
-      console.log('Order vs expense raw:', ordExpTrend);
+
     };
     fetchData();
   }, []);

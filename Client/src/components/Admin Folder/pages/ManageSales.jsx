@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getPurchases } from "../../../utils/api/purchaseapi";
 
-const Purchase = () => {
+const ManageSales = () => {
     const [purchaseList, setPurchaseList] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -12,7 +12,7 @@ const Purchase = () => {
 
             setPurchaseList(data);
         } catch (err) {
-            console.error("Error fetching purchases:", err);
+            console.error("Error fetching sales:", err);
         } finally {
             setLoading(false);
         }
@@ -26,15 +26,15 @@ const Purchase = () => {
         <div className="p-4">
             <div className="flex justify-between items-center mb-4">
                 <div>
-                    <h2 className="text-2xl font-semibold">Purchase Management</h2>
+                    <h2 className="text-2xl font-semibold">Manage Sales</h2>
                     <p className="text-sm text-gray-500">
-                        View and manage all purchases (Paid Orders + Expenses)
+                        View and manage all sales (Paid Orders + Expenses)
                     </p>
                 </div>
             </div>
 
             {loading ? (
-                <div className="text-center py-8">Loading purchases...</div>
+                <div className="text-center py-8">Loading sales...</div>
             ) : (
                 <div className="overflow-x-auto bg-white rounded-lg shadow">
                     <table className="table-auto w-full border">
@@ -54,7 +54,7 @@ const Purchase = () => {
                             {purchaseList.length === 0 ? (
                                 <tr>
                                     <td colSpan="8" className="p-4 text-center text-gray-500">
-                                        No purchases found
+                                        No sales found
                                     </td>
                                 </tr>
                             ) : (
@@ -103,4 +103,4 @@ const Purchase = () => {
     );
 };
 
-export default Purchase;
+export default ManageSales;

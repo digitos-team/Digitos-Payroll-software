@@ -32,7 +32,7 @@ export default function RecentActivities({ activities: propActivities = null, li
 
                 // Map API response to component format
                 // Handle both field names: 'action' and 'ActivityType' (different controllers use different names)
-          console.log('Raw API data:', data)
+
                 const mapped = data.map((item, index) => ({
                     id: item._id || index,
                     date: item.createdAt ? new Date(item.createdAt).toISOString().slice(0, 10) : '',
@@ -85,19 +85,19 @@ export default function RecentActivities({ activities: propActivities = null, li
                 </div>
             </div>
 
-           <div className="space-y-3 overflow-auto flex-1 pr-2">
-    {filtered.map((f) => (
-        <div key={f.id} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <div className="text-sm text-gray-500">{f.date} • {f.role}</div>
-            <div className="text-gray-800">
-                {f.user} {f.action} {f.target}
+            <div className="space-y-3 overflow-auto flex-1 pr-2">
+                {filtered.map((f) => (
+                    <div key={f.id} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div className="text-sm text-gray-500">{f.date} • {f.role}</div>
+                        <div className="text-gray-800">
+                            {f.user} {f.action} {f.target}
+                        </div>
+                    </div>
+                ))}
+                {filtered.length === 0 && (
+                    <div className="text-gray-500 text-center py-4">No recent activities found.</div>
+                )}
             </div>
-        </div>
-    ))}
-    {filtered.length === 0 && (
-        <div className="text-gray-500 text-center py-4">No recent activities found.</div>
-    )}
-</div>
         </div>
     )
 }

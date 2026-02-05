@@ -17,7 +17,7 @@ export default function Payroll() {
     const loadHeads = async () => {
         try {
             const data = await fetchSalaryHeads(companyId);
-            console.log("Loaded salary heads:", data);
+
             setHeads(data);
         } catch (error) {
             console.error("Failed to load salary heads", error);

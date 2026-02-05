@@ -4,41 +4,41 @@ import mongoose from "mongoose";
 const OrderSchema = new mongoose.Schema(
   {
     // Company & Branch
-    CompanyId: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: "Company", 
-      required: true 
+    CompanyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+      required: true
     },
-    BranchId: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: "Branch" 
+    BranchId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Branch"
     },
 
     // Client Information
-    ClientName: { 
-      type: String, 
-      required: true 
+    ClientName: {
+      type: String,
+      required: true
     },
-    ClientEmail: { 
-      type: String 
+    ClientEmail: {
+      type: String
     },
-    ClientPhone: { 
-      type: String 
+    ClientPhone: {
+      type: String
     },
-    
+
     // ✅ GST Information
-    ClientGSTIN: { 
+    ClientGSTIN: {
       type: String,
       uppercase: true,
       validate: {
-        validator: function(v) {
+        validator: function (v) {
           if (!v) return true; // Optional field
           return /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(v);
         },
         message: 'Invalid GSTIN format'
       }
     },
-    ClientState: { 
+    ClientState: {
       type: String,
       enum: [
         "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
@@ -51,86 +51,84 @@ const OrderSchema = new mongoose.Schema(
       ]
     },
     ClientAddress: {
-      street: String,
-      city: String,
-      state: String,
-      pincode: String
+      type: String,
+      comment: "Full address for billing"
     },
 
     // Service Details
-    ServiceTitle: { 
-      type: String, 
-      required: true 
+    ServiceTitle: {
+      type: String,
+      required: true
     },
-    ServiceDescription: { 
-      type: String 
+    ServiceDescription: {
+      type: String
     },
-    
+
     // ✅ HSN/SAC Code for services
     HSNCode: {
       type: String,
       default: "998314",
       comment: "HSN/SAC code for GST"
     },
-    
-    StartDate: { 
-      type: Date 
+
+    StartDate: {
+      type: Date
     },
-    EndDate: { 
-      type: Date 
+    EndDate: {
+      type: Date
     },
 
     // ✅ Financial Details - WITH GST & ROUNDING
-    BaseAmount: { 
-      type: Number, 
+    BaseAmount: {
+      type: Number,
       required: true,
       min: 0,
       comment: "Amount before GST"
     },
-    
+
     GSTRate: {
       type: Number,
       enum: [0, 5, 12, 18, 28],
       default: 18,
       comment: "GST percentage"
     },
-    
+
     // Auto-calculated GST fields (ROUNDED)
-    CGSTAmount: { 
-      type: Number, 
+    CGSTAmount: {
+      type: Number,
       default: 0,
       comment: "Central GST (for intra-state) - ROUNDED"
     },
-    SGSTAmount: { 
-      type: Number, 
+    SGSTAmount: {
+      type: Number,
       default: 0,
       comment: "State GST (for intra-state) - ROUNDED"
     },
-    IGSTAmount: { 
-      type: Number, 
+    IGSTAmount: {
+      type: Number,
       default: 0,
       comment: "Integrated GST (for inter-state) - ROUNDED"
     },
-    
+
     TotalGSTAmount: {
       type: Number,
       default: 0,
       comment: "Total GST amount - ROUNDED"
     },
-    
-    Amount: { 
+
+    Amount: {
       type: Number,
       min: 0,
       default: 0,
       comment: "Total amount including GST (auto-calculated) - ROUNDED"
     },
-    
-    AdvancePaid: { 
-      type: Number, 
+
+    AdvancePaid: {
+      type: Number,
       default: 0,
       min: 0
     },
-    BalanceDue: { 
+    BalanceDue: {
       type: Number,
       default: 0
     },
@@ -141,7 +139,7 @@ const OrderSchema = new mongoose.Schema(
       enum: ["CGST+SGST", "IGST", "Non-GST"],
       default: "CGST+SGST"
     },
-    
+
     IsIGST: {
       type: Boolean,
       default: false,
@@ -167,54 +165,54 @@ const OrderSchema = new mongoose.Schema(
       sparse: true,
       comment: "Simple order reference number"
     },
-    TaxInvoiceNumber: { 
-      type: String, 
-      unique: true, 
+    TaxInvoiceNumber: {
+      type: String,
+      unique: true,
       sparse: true,
       comment: "Generated when payment is complete"
     },
-    InvoiceGeneratedAt: { 
-      type: Date 
+    InvoiceGeneratedAt: {
+      type: Date
     },
 
     // Payment History
     PaymentHistory: [{
       amount: { type: Number, required: true },
       date: { type: Date, default: Date.now },
-      paymentMethod: { 
-        type: String, 
+      paymentMethod: {
+        type: String,
         enum: ["Cash", "Bank Transfer", "UPI", "Card", "Cheque", "Other"],
         default: "Bank Transfer"
       },
       transactionId: { type: String },
       notes: { type: String },
-      recordedBy: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: "User" 
+      recordedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
       }
     }],
 
     // Notes & Tracking
-    Notes: { 
-      type: String 
+    Notes: {
+      type: String
     },
-    CreatedBy: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: "User" 
+    CreatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
     },
   },
-  { 
-    timestamps: true 
+  {
+    timestamps: true
   }
 );
 
 // ✅ PRE-SAVE HOOK 1: Auto-detect IGST based on state comparison
-OrderSchema.pre('save', async function(next) {
+OrderSchema.pre('save', async function (next) {
   if (this.isModified('ClientState') || this.isModified('CompanyId') || this.isNew) {
     try {
       // Get company details to compare states
       const company = await mongoose.model('Company').findById(this.CompanyId);
-      
+
       if (company && this.ClientState) {
         // ✅ FIXED: Use CompanyState instead of State
         this.IsIGST = (company.CompanyState !== this.ClientState);
@@ -227,7 +225,7 @@ OrderSchema.pre('save', async function(next) {
 });
 
 // ✅ PRE-SAVE HOOK 2: Calculate GST automatically WITH ROUNDING
-OrderSchema.pre('save', async function(next) {
+OrderSchema.pre('save', async function (next) {
   try {
     // Recalculate if BaseAmount, GSTRate, or IsIGST is modified, or if it's new
     if (this.isModified('BaseAmount') || this.isModified('GSTRate') || this.isModified('IsIGST') || this.isNew) {
@@ -253,7 +251,7 @@ OrderSchema.pre('save', async function(next) {
 
       // ✅ Set total GST (ROUNDED)
       this.TotalGSTAmount = Math.round(totalGST);
-      
+
       // ✅ Calculate final amount (ROUNDED)
       this.Amount = Math.round(baseAmount + totalGST);
 
@@ -268,13 +266,13 @@ OrderSchema.pre('save', async function(next) {
 });
 
 // ✅ PRE-SAVE HOOK 3: Auto-calculate BalanceDue and PaymentStatus
-OrderSchema.pre('save', function(next) {
+OrderSchema.pre('save', function (next) {
   if (this.isModified('Amount') || this.isModified('AdvancePaid')) {
     this.BalanceDue = Math.round(this.Amount - (this.AdvancePaid || 0));
-    
+
     // Ensure BalanceDue is not negative
     if (this.BalanceDue < 0) this.BalanceDue = 0;
-    
+
     // Auto-update payment status
     if (this.BalanceDue === 0 && this.AdvancePaid > 0) {
       this.PaymentStatus = "Paid";
@@ -288,19 +286,19 @@ OrderSchema.pre('save', function(next) {
 });
 
 // ✅ PRE-SAVE HOOK 4: Generate Simple Order Number
-OrderSchema.pre('save', async function(next) {
+OrderSchema.pre('save', async function (next) {
   if (this.isNew && !this.OrderNumber) {
     try {
       const year = new Date().getFullYear();
       const month = String(new Date().getMonth() + 1).padStart(2, '0');
-      
+
       const lastOrder = await mongoose.model('Order')
-        .findOne({ 
-          OrderNumber: new RegExp(`^ORD-${year}${month}-`) 
+        .findOne({
+          OrderNumber: new RegExp(`^ORD-${year}${month}-`)
         })
         .sort({ OrderNumber: -1 })
         .select('OrderNumber');
-      
+
       let nextNumber = 1;
       if (lastOrder && lastOrder.OrderNumber) {
         const match = lastOrder.OrderNumber.match(/ORD-\d{6}-(\d{3})/);
@@ -308,7 +306,7 @@ OrderSchema.pre('save', async function(next) {
           nextNumber = parseInt(match[1]) + 1;
         }
       }
-      
+
       this.OrderNumber = `ORD-${year}${month}-${String(nextNumber).padStart(3, '0')}`;
     } catch (error) {
       console.error('Error generating order number:', error);
@@ -327,18 +325,18 @@ OrderSchema.index({ TaxInvoiceNumber: 1 });
 OrderSchema.index({ ClientGSTIN: 1 });
 
 // ✅ Virtual for payment completion percentage
-OrderSchema.virtual('paymentPercentage').get(function() {
+OrderSchema.virtual('paymentPercentage').get(function () {
   if (!this.Amount || this.Amount === 0) return 0;
   return Math.round((this.AdvancePaid / this.Amount) * 100);
 });
 
 // ✅ Virtual for checking if order can be billed
-OrderSchema.virtual('canGenerateBill').get(function() {
+OrderSchema.virtual('canGenerateBill').get(function () {
   return this.PaymentStatus === "Paid" && !this.TaxInvoiceNumber;
 });
 
 // ✅ Method to get GST breakdown (ROUNDED VALUES)
-OrderSchema.methods.getGSTBreakdown = function() {
+OrderSchema.methods.getGSTBreakdown = function () {
   return {
     baseAmount: Math.round(this.BaseAmount),
     gstRate: this.GSTRate,
@@ -353,7 +351,7 @@ OrderSchema.methods.getGSTBreakdown = function() {
 };
 
 // ✅ Static method for rounding amounts
-OrderSchema.statics.roundAmount = function(amount) {
+OrderSchema.statics.roundAmount = function (amount) {
   return Math.round(amount);
 };
 

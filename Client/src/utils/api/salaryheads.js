@@ -8,10 +8,7 @@ export const addSalaryHead = async (data, CompanyId) => {
 export const fetchSalaryHeads = async (CompanyId) => {
     try {
 
-        console.log("Fetching salary heads for CompanyId:", CompanyId);
-
-        const response = await axiosInstance.post("/fetchsalaryhead", { CompanyId });
-        console.log("Salary heads API response:", response.data);
+        const response = await axiosInstance.get(`/getsalaryheads?CompanyId=${CompanyId}`);
 
         // Return the data array directly
         return response.data?.data || [];

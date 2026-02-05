@@ -27,9 +27,7 @@ export const getTotalRevenue = async (companyId) => {
     const CompanyId = companyId || getCompanyId();
     const actualCompanyId = CompanyId?._id || CompanyId;
 
-    console.log("getTotalRevenue - CompanyId received:", companyId);
-    console.log("getTotalRevenue - CompanyId from Redux:", CompanyId);
-    console.log("getTotalRevenue - Actual CompanyId to send:", actualCompanyId);
+
 
     if (!actualCompanyId) {
       throw new Error("Company ID is required");
@@ -40,7 +38,6 @@ export const getTotalRevenue = async (companyId) => {
     // You need to fix backend: change $match: { companyId: companyId } to $match: { CompanyId: new mongoose.Types.ObjectId(CompanyId) }
     const response = await axiosInstance.post(`/gettotalrevenue/${actualCompanyId}`);
 
-    console.log("getTotalRevenue - Response:", response.data);
 
     return response.data;   // { companyId, totalRevenue, totalRecords }
   } catch (error) {
@@ -94,11 +91,9 @@ export const getAllRevenue = async (propCompanyId) => {
     const CompanyId = propCompanyId || getCompanyId();
     const actualCompanyId = CompanyId?._id || CompanyId;
     const params = { CompanyId: actualCompanyId };
-    console.log("Fetching revenue for CompanyId:", actualCompanyId);
 
     // Use /getrevenue endpoint (matches backend route)
     const res = await axiosInstance.get("/getrevenue", { params });
-    console.log("Revenue API response:", res.data);
 
     return res.data;
   } catch (err) {

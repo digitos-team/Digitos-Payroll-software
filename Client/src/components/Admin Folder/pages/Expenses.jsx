@@ -36,7 +36,7 @@ const Expenses = () => {
         try {
             setLoading(true);
             const data = await getAllExpenses();
-            console.log("Fetched expense data:", data);
+
             setExpenseList(data);
         } catch (err) {
             console.error("Error fetching expenses:", err);
@@ -49,11 +49,9 @@ const Expenses = () => {
     const fetchOrders = async () => {
         try {
             const data = await getOrdersApi();
-            console.log("Fetched orders data:", data);
-            console.log("Orders array:", Array.isArray(data) ? data : "Not an array");
+
             if (data && data.length > 0) {
-                console.log("First order object:", data[0]);
-                console.log("First order keys:", Object.keys(data[0]));
+
             }
             setOrders(data || []);
         } catch (err) {
@@ -304,7 +302,7 @@ const Expenses = () => {
                     <select
                         value={selectedOrderId}
                         onChange={(e) => {
-                            console.log("Selected order ID:", e.target.value);
+
                             handleOrderSelect(e.target.value);
                         }}
                         className="flex-1 max-w-md border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"

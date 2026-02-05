@@ -121,8 +121,9 @@ export const exportMonthlyRevenuePDF = async (req, res) => {
       range.yearNum
     );
 
-    // [LOG ACTIVITY]
-    if (CompanyId) {
+
+    // [LOG ACTIVITY] - Only for CA
+    if (req.user?.role === "CA" && CompanyId) {
       await RecentActivity.create({
         CompanyId: new mongoose.Types.ObjectId(CompanyId),
         userId: req.user?._id || null,
@@ -181,8 +182,9 @@ export const exportMonthlyExpensesPDF = async (req, res) => {
       range.yearNum
     );
 
-    // [LOG ACTIVITY]
-    if (CompanyId) {
+
+    // [LOG ACTIVITY] - Only for CA
+    if (req.user?.role === "CA" && CompanyId) {
       await RecentActivity.create({
         CompanyId: new mongoose.Types.ObjectId(CompanyId),
         userId: req.user?._id || null,
@@ -234,8 +236,9 @@ export const exportMonthlyOrdersPDF = async (req, res) => {
       range.yearNum
     );
 
-    // [LOG ACTIVITY]
-    if (CompanyId) {
+
+    // [LOG ACTIVITY] - Only for CA
+    if (req.user?.role === "CA" && CompanyId) {
       await RecentActivity.create({
         CompanyId: new mongoose.Types.ObjectId(CompanyId),
         userId: req.user?._id || null,
@@ -314,8 +317,9 @@ export const exportMonthlyPurchasesPDF = async (req, res) => {
       range.yearNum
     );
 
-    // [LOG ACTIVITY]
-    if (CompanyId) {
+
+    // [LOG ACTIVITY] - Only for CA
+    if (req.user?.role === "CA" && CompanyId) {
       await RecentActivity.create({
         CompanyId: new mongoose.Types.ObjectId(CompanyId),
         userId: req.user?._id || null,
@@ -445,8 +449,9 @@ export const exportComprehensiveMonthlyReportPDF = async (req, res) => {
       range.yearNum
     );
 
-    // [LOG ACTIVITY]
-    if (CompanyId) {
+
+    // [LOG ACTIVITY] - Only for CA
+    if (req.user?.role === "CA" && CompanyId) {
       await RecentActivity.create({
         CompanyId: new mongoose.Types.ObjectId(CompanyId),
         userId: req.user?._id || null,
@@ -513,8 +518,9 @@ export const exportAnnualReportPDF = async (req, res) => {
 
     const filePath = await generateAnnualReportPDF(data);
 
-    // [LOG ACTIVITY]
-    if (CompanyId) {
+
+    // [LOG ACTIVITY] - Only for CA
+    if (req.user?.role === "CA" && CompanyId) {
       await RecentActivity.create({
         CompanyId: new mongoose.Types.ObjectId(CompanyId),
         userId: req.user?._id || null,
@@ -626,21 +632,23 @@ export const generateSalaryReportPDF = async (req, res) => {
     doc.on("end", async () => {
       const pdfData = Buffer.concat(buffers);
 
-      // [LOG ACTIVITY]
-      await RecentActivity.create({
-        CompanyId: new mongoose.Types.ObjectId(CompanyId),
-        userId: req.user?._id || null,
-        action: `Downloaded Salary Report (${Month || "All Months"})`,
-        target: "Reports", // or 'Payroll'
-        isEmailSent: false,
-      });
+
+      // [LOG ACTIVITY] - Only for CA
+      if (req.user?.role === "CA" && CompanyId) {
+        await RecentActivity.create({
+          CompanyId: new mongoose.Types.ObjectId(CompanyId),
+          userId: req.user?._id || null,
+          action: `Downloaded Salary Report (${Month || "All Months"})`,
+          target: "Reports",
+          isEmailSent: false,
+        });
+      }
 
       res.writeHead(200, {
         "Content-Length": pdfData.length,
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename=SalaryReport-${
-          Month || "AllMonths"
-        }.pdf`,
+        "Content-Disposition": `attachment; filename=SalaryReport-${Month || "AllMonths"
+          }.pdf`,
       });
       res.end(pdfData);
     });
@@ -868,8 +876,8 @@ export const exportMonthlyPayrollPDF = async (req, res) => {
       // 2. Determine the effective BranchId (Slip > User > Null)
       {
         $addFields: {
-          effectiveBranchId: { 
-            $ifNull: ["$BranchId", "$employeeData.BranchId"] 
+          effectiveBranchId: {
+            $ifNull: ["$BranchId", "$employeeData.BranchId"]
           },
         },
       },
@@ -1070,7 +1078,7 @@ export const exportOverallOrdersPDF = async (req, res) => {
       filter.createdAt = {};
       if (start) filter.createdAt.$gte = new Date(start);
       if (end) filter.createdAt.$lt = new Date(end);
-    } 
+    }
 
     const orders = await Order.find(filter)
       .populate("CompanyId", "CompanyName")
@@ -1200,8 +1208,8 @@ export const exportOverallOrdersPDF = async (req, res) => {
         .text(
           o.Amount != null
             ? `₹${Number(o.Amount).toLocaleString("en-IN", {
-                minimumFractionDigits: 2,
-              })}`
+              minimumFractionDigits: 2,
+            })}`
             : "-",
           330,
           y,

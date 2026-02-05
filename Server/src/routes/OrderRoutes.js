@@ -23,7 +23,7 @@ OrderRoutes.post("/recordpayment", recordPayment); // Record a payment for an or
 OrderRoutes.put("/confirm-order", confirmOrder); // Update order status
 OrderRoutes.put("/update-order", updateOrder); // Update order details
 OrderRoutes.delete("/deleteorder", deleteOrder); // Delete order
-OrderRoutes.get("/getpaymenthistory/:orderId", getPaymentHistory); // Get payment history for an order
+OrderRoutes.get("/getpaymenthistory/:id", getPaymentHistory); // Get payment history for an order
 // -------------------- MONTHLY ORDERS --------------------
 OrderRoutes.get("/monthwiseorders", getMonthlyOrders); // Get monthly summary
 OrderRoutes.get("/monthlydetails", getMonthOrders); // Get specific month details

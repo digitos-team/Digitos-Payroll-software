@@ -9,14 +9,10 @@ export const verifyToken = async (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // 🔍 DEBUG: Log what's in the token
-    console.log("🔍 Token decoded successfully:", {
-      id: decoded.id,
-      role: decoded.role
-    });
+
 
     const userId = decoded.id || decoded.userId || decoded._id;
-    
+
     if (!userId) {
       return res.status(401).json({ message: "Invalid token: missing user ID" });
     }
@@ -28,9 +24,9 @@ export const verifyToken = async (req, res, next) => {
       // Use decoded data instead of DB lookup
     };
 
-    console.log("✅ Using token data - Role:", req.user.role);
+
     next();
-    
+
   } catch (error) {
     if (error.name === "TokenExpiredError") {
       return res.status(401).json({
@@ -45,18 +41,18 @@ export const verifyToken = async (req, res, next) => {
 // Restrict route by role
 export const authorizeRoles = (...roles) => {
   return (req, res, next) => {
-    console.log("🔍 Checking authorization - User role:", req.user.role, "Required roles:", roles);
-    
+
+
     if (!roles.includes(req.user.role)) {
       console.error("❌ Authorization failed - User role doesn't match");
-      return res.status(403).json({ 
+      return res.status(403).json({
         message: "Forbidden: Access denied",
         userRole: req.user.role,
         requiredRoles: roles
       });
     }
-    
-    console.log("✅ Authorization successful");
+
+
     next();
   };
 };

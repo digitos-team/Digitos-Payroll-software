@@ -3,6 +3,7 @@ import { LeaveBalance } from "../models/LeaveBalanceSchema.js";
 import { GlobalLeaveSettings } from "../models/GlobalLeaveSettingsSchema.js";
 import { Attendance } from "../models/AttendanceSchema.js";
 import { Holiday } from "../models/HolidaySchema.js";
+import { RecentActivity } from "../models/RecentActivitySchema.js";
 
 const getOrInitBalance = async (CompanyId, UserId, Month) => {
     // Always fetch current settings
@@ -185,6 +186,16 @@ export const updateLeaveStatus = async (req, res) => {
                 await balance.save();
             }
         }
+
+        // [LOG ACTIVITY]
+        // Populate user name for the log
+        await leave.populate("UserId", "Name");
+        await RecentActivity.create({
+            CompanyId: leave.CompanyId,
+            userId: ApproverId,
+            action: `${Status} Leave`, // "Approved Leave" or "Rejected Leave"
+            target: leave.UserId?.Name ? `Employee ${leave.UserId.Name}` : "Employee",
+        });
 
         res.status(200).json({ success: true, message: `Leave ${Status}` });
     } catch (error) {

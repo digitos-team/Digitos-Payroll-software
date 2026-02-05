@@ -35,11 +35,10 @@ export default function Login() {
         Password: password,
       });
 
-      console.log("Login response:", res.data);
+
 
       const { token, role, user } = res.data;
-      console.log("🔍 DEBUG - Raw role from backend:", role);
-      console.log("🔍 DEBUG - User data:", user);
+
 
       if (!token || !user) {
         setError("Invalid credentials");
@@ -54,8 +53,7 @@ export default function Login() {
       const normalizedRole = role?.toLowerCase();
       const companyId = user.companyId;
 
-      console.log("🔍 DEBUG - Normalized role:", normalizedRole);
-      console.log("🔍 DEBUG - CompanyId:", companyId);
+
 
       // Dispatch login to Redux
       dispatch(
@@ -67,7 +65,7 @@ export default function Login() {
         })
       );
 
-      console.log("🔍 DEBUG - Dispatched to Redux successfully");
+
 
       setSuccess("Login successful!");
       navigate("/");

@@ -16,7 +16,7 @@ import BranchList from "../pages/BranchList";
 import Designation from "../pages/Designation";
 import Revenue from "../pages/Revenue";
 import Orders from "../pages/Orders";
-import Purchase from "../pages/Purchase";
+import ManageSales from "../pages/ManageSales";
 import Expenses from "../pages/Expenses";
 import Holidays from "../pages/Holidays";
 import LeaveSettings from "../pages/LeaveSettings";
@@ -75,7 +75,7 @@ const AdminRoutes = () => (
     <Route path="designation" element={<Designation />} />
     <Route path="revenue" element={<Revenue />} />
     <Route path="orders" element={<Orders />} />
-    <Route path="purchase" element={<Purchase />} />
+    <Route path="manage-sales" element={<ManageSales />} />
     <Route path="expenses" element={<Expenses />} />
     <Route path="expenses" element={<Expenses />} />
     <Route path="salary-requests" element={<AdminSalaryRequests />} />
@@ -137,10 +137,7 @@ const EmployeeRoutes = () => (
 export default function AppRoutes() {
   const { token, role } = useSelector((state) => state.auth);
 
-  console.log("🔍 ROUTES DEBUG - Token exists:", !!token);
-  console.log("🔍 ROUTES DEBUG - Role from Redux:", role);
-  console.log("🔍 ROUTES DEBUG - Role type:", typeof role);
-  console.log("🔍 ROUTES DEBUG - Role lowercase:", role?.toLowerCase());
+
 
   return (
     <Routes>

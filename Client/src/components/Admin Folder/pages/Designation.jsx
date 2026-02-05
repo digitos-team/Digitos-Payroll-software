@@ -44,19 +44,19 @@ export default function Designations() {
   // Delete a designation
   // Update handleDelete function
   const handleDelete = async (id) => {
-    console.log("handleDelete called with ID:", id); // Add this
+
 
     if (!window.confirm("Are you sure you want to delete this designation?")) {
-      console.log("User cancelled deletion"); // Add this
+
       return;
     }
 
-    console.log("Proceeding with deletion..."); // Add this
+
 
     try {
-      console.log("Calling deleteDesignation API..."); // Add this
+
       const response = await deleteDesignation(id);
-      console.log("Delete response:", response); // Add this
+
 
       setDesignations((prev) => prev.filter((d) => d._id !== id));
       alert("Designation deleted successfully!");

@@ -18,7 +18,7 @@ const Salary = () => {
 
   // Helper function to normalize status from API response
   const normalizeStatus = (statusData) => {
-    console.log('🔍 Normalizing status data:', statusData);
+
 
     if (!statusData) return 'none';
 
@@ -32,26 +32,26 @@ const Salary = () => {
 
     const normalizedStatus = String(status).toLowerCase();
 
-    console.log('✅ Normalized status:', normalizedStatus);
+
     return normalizedStatus;
   };
 
   // Function to fetch statuses for all records
   const fetchStatuses = async (records, userId, companyIdValue) => {
-    console.log('🔍 SALARY - Fetching statuses for', records.length, 'records');
+
 
     const dataWithStatuses = await Promise.all(
       records.map(async (record) => {
         try {
 
           // 🔥 DEBUG LINE ADDED HERE
-          console.log("🔥 FRONTEND SENDING MONTH TO BACKEND ===>", record.month);
+
 
           const statusData = await getRequestStatus(userId, record.month, companyIdValue);
-          console.log(`✅ SALARY - Raw status data for ${record.month}:`, JSON.stringify(statusData, null, 2));
+
 
           const status = normalizeStatus(statusData);
-          console.log(`✅ SALARY - Final status for ${record.month}: ${status}`);
+
 
           return { ...record, slipStatus: status };
         } catch (err) {
@@ -61,14 +61,14 @@ const Salary = () => {
       })
     );
 
-    console.log('🔍 SALARY - All records with statuses:', dataWithStatuses);
+
     return dataWithStatuses;
   };
 
   useEffect(() => {
     const fetchSalaryHistory = async () => {
       const userId = user?.id || user?._id;
-      console.log('🔍 SALARY - Fetching history for user:', userId);
+
 
       try {
         setLoading(true);
@@ -87,11 +87,10 @@ const Salary = () => {
           slipStatus: 'none',
         }));
 
-        console.log('🔍 SALARY - Transformed data:', transformedData);
 
         const dataWithStatuses = await fetchStatuses(transformedData, userId, companyIdValue);
 
-        console.log('✅ SALARY - Final data:', dataWithStatuses);
+
         setHistory(dataWithStatuses);
       } catch (err) {
         console.error('❌ SALARY - Error:', err);
@@ -117,10 +116,9 @@ const Salary = () => {
     const hasPendingRequests = history.some(item => item.slipStatus === 'pending');
     if (!hasPendingRequests) return;
 
-    console.log('🔄 SALARY - Setting up auto-refresh for pending requests');
 
     const intervalId = setInterval(async () => {
-      console.log('🔄 SALARY - Auto-refreshing pending statuses...');
+
 
       const updatedHistory = await Promise.all(
         history.map(async (record) => {
@@ -131,7 +129,7 @@ const Salary = () => {
               const newStatus = normalizeStatus(statusData);
 
               if (newStatus !== 'pending') {
-                console.log(`✅ SALARY - Status changed for ${record.month}: ${newStatus}`);
+
 
                 if (newStatus === 'approved') {
                   setError('✅ Request approved! You can now download the slip.');
@@ -156,14 +154,13 @@ const Salary = () => {
     }, 5000);
 
     return () => {
-      console.log('🔄 SALARY - Clearing auto-refresh interval');
+
       clearInterval(intervalId);
     };
   }, [history, user]);
 
   const handleRequestSlip = async (month) => {
-    console.log(`🔵 ============================================`);
-    console.log(`🔵 Requesting slip for: ${month}`);
+
     console.log(`🔵 ============================================`);
 
     try {

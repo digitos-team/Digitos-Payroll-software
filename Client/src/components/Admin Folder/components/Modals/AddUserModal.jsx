@@ -423,9 +423,9 @@ export default function AddUserModal({ open, onClose, onAdd, isLoading }) {
                     />
                     <input
                       value={form.BankDetails.IFSCCode}
-                      onChange={(e) => updateBankField("IFSCCode", e.target.value)}
+                      onChange={(e) => updateBankField("IFSCCode", e.target.value.toUpperCase())}
                       placeholder="IFSC Code"
-                      className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white uppercase"
                     />
                     <input
                       value={form.BankDetails.BranchName}

@@ -24,6 +24,15 @@ const SalarySlipSchema = new mongoose.Schema(
     grossSalary: { type: Number, default: 0 },
     netSalary: { type: Number, default: 0 },
     TaxAmount: { type: Number, default: 0 },
+    // Attendance breakdown
+    attendanceSummary: {
+      totalWorkingDays: { type: Number, default: 0 },
+      presentDays: { type: Number, default: 0 },
+      unpaidLeaves: { type: Number, default: 0 },
+      halfDays: { type: Number, default: 0 },
+      paidLeaves: { type: Number, default: 0 },
+      leaveDeductionAmount: { type: Number, default: 0 },
+    },
     DepartmentId: { type: mongoose.Schema.Types.ObjectId, ref: "Department" },
     BranchId: { type: mongoose.Schema.Types.ObjectId, ref: "Branch" },
   },

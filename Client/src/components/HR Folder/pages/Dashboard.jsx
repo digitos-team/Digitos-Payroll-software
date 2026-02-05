@@ -104,7 +104,7 @@ const Dashboard = () => {
             </div>
           </div>
           <Link
-            to="/hr/leaves"
+            to="/hr/leave-requests"
             className="px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors shadow-sm"
           >
             Review Requests

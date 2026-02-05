@@ -81,9 +81,7 @@ export const getAllEmployees = async (role, CompanyId) => {
     const params = { CompanyId };
     if (role) params.role = role;
 
-    console.log("Fetching employees with params:", params);
     const res = await axiosInstance.get("/getallusers", { params });
-    console.log("Employees API response:", res.data);
 
     // Backend returns array directly
     return { data: res.data };
@@ -99,20 +97,15 @@ export const getAllEmployees = async (role, CompanyId) => {
 // -------------------- Get Employee by ID --------------------
 export const getEmployeeById = async (id) => {
   try {
-    console.log('🔍 getEmployeeById - Fetching user with ID:', id);
 
     // Since /getuserbyid doesn't exist, use /getallusers and filter
     const res = await axiosInstance.get("/getallusers");
-    console.log('🔍 getEmployeeById - All users response:', res.data);
 
     // Backend returns {success: true, users: Array}
     const users = res.data.users || res.data.data || res.data || [];
-    console.log('🔍 getEmployeeById - Users array:', users);
-    console.log('🔍 getEmployeeById - Looking for ID:', id);
 
     // Find the user with matching ID
     const user = users.find(u => {
-      console.log('🔍 Checking user:', u._id, 'against', id);
       return u._id === id || u.id === id;
     });
 
@@ -121,7 +114,6 @@ export const getEmployeeById = async (id) => {
       throw new Error(`User with ID ${id} not found`);
     }
 
-    console.log('✅ getEmployeeById - Found user:', user);
     return user;
   } catch (err) {
     console.error('❌ getEmployeeById - Error:', err);

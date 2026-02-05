@@ -11,6 +11,9 @@ import path from "path";
 import fs from "fs";
 import { Holiday } from "../models/HolidaySchema.js";
 import { Attendance } from "../models/AttendanceSchema.js";
+import puppeteer from "puppeteer";
+import salarySlipHtml from "../templates/salarySlipHtml.js";
+import { convertNumberToWords } from "../utils/numberToWords.js";
 
 const round2 = (v) => Math.round((Number(v) || 0) * 100) / 100;
 
@@ -92,9 +95,10 @@ const computeSlipData = async ({
 }) => {
   // settings: SalarySettings doc with populated SalaryHeads.SalaryHeadId
   if (!settings) throw new Error("Salary settings not found");
-  const basicHead = (settings.SalaryHeads || []).find(
-    (h) => h.SalaryHeadId && h.SalaryHeadId.ShortName === "BS"
-  );
+  const basicHead = (settings.SalaryHeads || []).find((h) => {
+    const shortName = h.SalaryHeadId?.ShortName?.toLowerCase();
+    return shortName === "bs" || shortName === "basic";
+  });
 
   if (!basicHead || basicHead.applicableValue == null) {
     throw new Error("Basic salary not configured");
@@ -162,32 +166,51 @@ const computeSlipData = async ({
     attendanceRecords.forEach((rec) => attendanceMap.set(rec.Date, rec.Status));
   }
 
+  // --- ATTENDANCE TRACKING ---
   let unpaidDays = 0;
+  let presentDays = 0;
+  let unpaidLeaveCount = 0;
+  let halfDayCount = 0;
+  let paidLeaveCount = 0;
+  let workingDays = 0;
+
   for (let d = 1; d <= totalDaysInMonth; d++) {
-    // Construct date string YYYY-MM-DD manually to avoid UTC shifts if using toISOString simply on new Date()
-    // but using UTC Date matches how we likely store "Date" in Holiday/Attendance
     const dateObj = new Date(Date.UTC(year, monthIdx, d));
     const dateStr = dateObj.toISOString().split("T")[0];
     const dayOfWeek = dateObj.getUTCDay(); // 0 is Sunday
 
-    // 1. Sunday -> Paid
+    // 1. Sunday -> Skip (not a working day)
     if (dayOfWeek === 0) continue;
 
-    // 2. Holiday -> Paid
+    // 2. Holiday -> Skip (not a working day)
     if (holidayDates.has(dateStr)) continue;
+
+    // This is a working day
+    workingDays++;
 
     // 3. Attendance Logic
     if (attendanceMap.has(dateStr)) {
       const status = attendanceMap.get(dateStr);
-      if (status === "UnpaidLeave") {
+      if (status === "UnpaidLeave" || status === "Absent") {
+        // Both UnpaidLeave and Absent deduct full day salary
         unpaidDays++;
+        unpaidLeaveCount++;
+      } else if (status === "HalfDay") {
+        unpaidDays += 0.5;
+        halfDayCount++;
+      } else if (status === "PaidLeave") {
+        paidLeaveCount++;
+      } else if (status === "Present") {
+        presentDays++;
       }
-      // Present or PaidLeave -> Paid
       continue;
     }
 
-    // 4. Implicit Absence -> Unpaid
-    unpaidDays++;
+    // 4. Unmarked days -> No deduction (assume present for small teams)
+    // Only explicit "Absent" or "UnpaidLeave" will deduct salary
+    // This is safer for 10-12 employee teams where HR might forget to mark
+    // unpaidDays++;
+    // unpaidLeaveCount++;
   }
 
   const perDayPay = basicSalary / totalDaysInMonth;
@@ -206,24 +229,16 @@ const computeSlipData = async ({
   const totalDeductions = round2(deductions.reduce((s, d) => s + d.amount, 0));
   const grossSalary = round2(totalEarnings);
   let TaxAmount = 0;
-  // console.log("=== TAX DEBUG ===");
-  // console.log("isTaxApplicable:", settings.isTaxApplicable);
-  // console.log("grossSalary:", grossSalary);
-  // console.log("annual:", grossSalary * 12);
-  // console.log("taxSlabsForMonth length:", taxSlabsForMonth?.length);
 
   if (settings.isTaxApplicable) {
     const annual = grossSalary * 12;
     if (Array.isArray(taxSlabsForMonth) && taxSlabsForMonth.length) {
       const annualTax = calculateProgressiveTax(annual, taxSlabsForMonth);
-      // console.log("annualTax:", annualTax);
       TaxAmount = round2(annualTax / 12);
-      // console.log("TaxAmount:", TaxAmount);
     }
   }
-  // console.log("=== END TAX DEBUG ===");
 
-  const netSalary = round2(grossSalary - totalDeductions - TaxAmount); // <-- ADD THIS LINE
+  const netSalary = round2(grossSalary - totalDeductions - TaxAmount);
 
   return {
     CompanyId,
@@ -236,6 +251,14 @@ const computeSlipData = async ({
     grossSalary,
     netSalary,
     TaxAmount,
+    attendanceSummary: {
+      totalWorkingDays: workingDays,
+      presentDays,
+      unpaidLeaves: unpaidLeaveCount,
+      halfDays: halfDayCount,
+      paidLeaves: paidLeaveCount,
+      leaveDeductionAmount,
+    },
   };
 };
 
@@ -342,8 +365,9 @@ const calculateSalary = async (req, res) => {
     // Recent activity
     await RecentActivity.create({
       CompanyId: toObjectId(CompanyId),
-      UserId: toObjectId(EmployeeID),
-      ActivityType: "SalaryGeneration",
+      userId: toObjectId(EmployeeID),
+      action: "Generated Salary",
+      target: "Payroll",
     });
 
     return res
@@ -364,6 +388,75 @@ const calculateSalary = async (req, res) => {
       });
   }
 };
+
+// -----------------------------
+// Preview salary calculation (no database save)
+// -----------------------------
+const previewSalary = async (req, res) => {
+  try {
+    const { EmployeeID, CompanyId, Month } = req.body;
+    if (!EmployeeID || !CompanyId || !Month) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "EmployeeID, CompanyId, and Month are required",
+        });
+    }
+
+    const normalizedMonth = normalizeMonth(Month);
+    if (!normalizedMonth) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid Month format" });
+    }
+
+    // Load settings
+    const salarySettings = await SalarySettings.findOne({
+      EmployeeID: toObjectId(EmployeeID),
+      CompanyId: toObjectId(CompanyId),
+    }).populate("SalaryHeads.SalaryHeadId");
+
+    if (!salarySettings) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Salary settings not found" });
+    }
+
+    // Load tax slabs applicable to this month
+    const monthDate = new Date(`${normalizedMonth}-01`);
+    const slabs = await TaxSlab.find({
+      CompanyId: toObjectId(CompanyId),
+      effectiveFrom: { $lte: monthDate },
+    }).sort({ minIncome: 1 });
+
+    // Compute slip data (does NOT save to database)
+    const slipData = await computeSlipData({
+      settings: salarySettings,
+      CompanyId: toObjectId(CompanyId),
+      EmployeeID: toObjectId(EmployeeID),
+      Month: normalizedMonth,
+      taxSlabsForMonth: slabs,
+    });
+
+    // Return preview data without saving
+    return res.status(200).json({
+      success: true,
+      message: "Salary preview calculated successfully",
+      data: slipData,
+    });
+  } catch (error) {
+    console.error("previewSalary error:", error);
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Internal server error",
+        error: error.message,
+      });
+  }
+};
+
 
 // -----------------------------
 // Bulk salary generation (optimized, batch insert)
@@ -817,7 +910,13 @@ const generateSalarySlipPDF = async (req, res) => {
     const slip = await SalarySlip.findOne({
       EmployeeID: toObjectId(EmployeeID),
       Month: Month,
-    }).populate("EmployeeID");
+    }).populate({
+      path: "EmployeeID",
+      populate: [
+        { path: "DesignationId", select: "DesignationName" },
+        { path: "DepartmentId", select: "DepartmentName" }
+      ]
+    });
 
     if (!slip) {
       return res.status(404).json({
@@ -826,159 +925,95 @@ const generateSalarySlipPDF = async (req, res) => {
       });
     }
 
-    const empName =
-      slip.EmployeeID?.Name ||
-      slip.EmployeeID?.EmployeeName ||
-      "Unknown Employee";
+    const emp = slip.EmployeeID || {};
+    const empName = emp.Name || emp.EmployeeName || "Unknown Employee";
+    const empDesignation = emp.DesignationId?.DesignationName || "N/A";
+    const empDepartment = emp.DepartmentId?.DepartmentName || "N/A";
+    const bankDetails = emp.BankDetails || {};
+
+    // Format month as "Jan 2026"
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const [yearStr, monthNum] = Month.split("-");
+    const formattedMonth = `${monthNames[parseInt(monthNum) - 1]} ${yearStr}`;
 
     // ============================================================
-    // 📄 START PDF GENERATION
+    // 📄 PREPARE HTML DATA
     // ============================================================
 
-    const doc = new PDFDocument({ margin: 50 });
-    const buffers = [];
-    doc.on("data", buffers.push.bind(buffers));
-    doc.on("end", () => {
-      const pdf = Buffer.concat(buffers);
-      res.writeHead(200, {
-        "Content-Length": pdf.length,
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename=SalarySlip-${Month}.pdf`,
-      });
-      res.end(pdf);
-    });
-
-    // ================= FONTS =================
-    const fontsDir = path.join(process.cwd(), "fonts");
-    doc.registerFont("Noto", path.join(fontsDir, "NotoSans-Regular.ttf"));
-    doc.registerFont("Noto-Bold", path.join(fontsDir, "NotoSans-Bold.ttf"));
-
-    const logoPath = path.join(process.cwd(), "logo", "RGB.png");
-
-    let y = 50;
-
-    // ============================================================
-    // 🏢 COMPANY HEADER
-    // ============================================================
-
-    doc.font("Noto-Bold").fontSize(18)
-      .text("Digitos It Solutions Pvt Ltd", 50, y, { align: "right" });
-
-    y += 25;
-
-    doc.font("Noto").fontSize(10)
-      .text("Hudco Colony", 50, y, { align: "right" })
-      .text("Chhatrapati Sambhajinagar, Maharashtra", 50, y + 12, { align: "right" })
-      .text("Phone: +91 98765 43210", 50, y + 24, { align: "right" })
-      .text("Email: info@digitositsolutions.com", 50, y + 36, { align: "right" })
-      .text("GSTIN: 27ABCDE1234F1Z5", 50, y + 48, { align: "right" });
-
-    y += 90;
-
-    // ============================================================
-    // 🖼️ WATERMARK LOGO
-    // ============================================================
-    if (fs.existsSync(logoPath)) {
-      doc.save();
-      doc.opacity(0.40);
-      doc.image(logoPath, 150, y - 50, { width: 300 });
-      doc.restore();
+    // Read letterhead image
+    const letterheadPath = path.join(process.cwd(), "logo", "custom_letterhead.png");
+    let letterheadBase64 = null;
+    if (fs.existsSync(letterheadPath)) {
+      const imageBuffer = fs.readFileSync(letterheadPath);
+      letterheadBase64 = `data:image/png;base64,${imageBuffer.toString('base64')}`;
     }
 
+    const slipData = {
+      letterhead: letterheadBase64,
+      company: {
+        name: "Digitos It Solutions Pvt Ltd",
+        address: "Hudco Colony, Chhatrapati Sambhajinagar, Maharashtra",
+        email: "info@digitositsolutions.com",
+        phone: "+91 98765 43210"
+      },
+      employee: {
+        name: empName,
+        id: emp.EmployeeCode || "N/A",
+        designation: empDesignation,
+        department: empDepartment,
+        bankName: bankDetails.BankName,
+        accountNumber: bankDetails.AccountNumber,
+        ifsc: bankDetails.IFSCCode || "N/A",
+        branch: bankDetails.BranchName || "N/A"
+      },
+      month: formattedMonth,
+      earnings: slip.Earnings || [],
+      deductions: slip.Deductions || [],
+      totals: {
+        totalEarnings: slip.totalEarnings,
+        totalDeductions: slip.totalDeductions
+      },
+      netSalary: slip.netSalary,
+      amountInWords: convertNumberToWords(Math.round(slip.netSalary))
+    };
+
+    const htmlContent = salarySlipHtml(slipData);
+
     // ============================================================
-    // 📌 SALARY SLIP TITLE
+    // 🖨️ PUPPETEER PDF GENERATION
     // ============================================================
 
-    doc.font("Noto-Bold").fontSize(22)
-      .text("SALARY SLIP", { align: "center" });
+    const browser = await puppeteer.launch({
+      headless: 'new',
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+    const page = await browser.newPage();
 
-    doc.moveDown(1);
+    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
 
-    doc.font("Noto").fontSize(12);
-    doc.text(`Employee Name : ${empName}`);
-    doc.text(`Employee Code : ${slip.EmployeeID?.EmployeeCode || "N/A"}`);
-    doc.text(`Month : ${Month}`);
-
-    y = doc.y + 20;
-
-    // Draw line
-    doc.moveTo(50, y).lineTo(550, y).stroke();
-    y += 20;
-
-    // ============================================================
-    // 💰 EARNINGS TABLE
-    // ============================================================
-
-    doc.font("Noto-Bold").fontSize(14).text("EARNINGS");
-    y = doc.y + 10;
-
-    // Table header
-    doc.font("Noto-Bold").fontSize(12);
-    doc.text("Title", 50, y);
-    doc.text("Amount (₹)", 400, y);
-
-    y += 20;
-    doc.moveTo(50, y).lineTo(550, y).stroke();
-    y += 10;
-
-    // Table rows
-    doc.font("Noto").fontSize(11);
-
-    (slip.Earnings || []).forEach((e) => {
-      doc.text(e.title, 50, y);
-      doc.text(`₹${Number(e.amount).toLocaleString("en-IN")}`, 400, y);
-      y += 18;
+    // Create PDF buffer
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: 'none'
     });
 
-    y += 10;
+    await browser.close();
 
-    // ============================================================
-    // ⚠️ DEDUCTIONS TABLE
-    // ============================================================
-
-    doc.font("Noto-Bold").fontSize(14).text("DEDUCTIONS");
-    y = doc.y + 10;
-
-    doc.font("Noto-Bold").fontSize(12);
-    doc.text("Title", 50, y);
-    doc.text("Amount (₹)", 400, y);
-
-    y += 20;
-    doc.moveTo(50, y).lineTo(550, y).stroke();
-    y += 10;
-
-    doc.font("Noto").fontSize(11);
-    (slip.Deductions || []).forEach((d) => {
-      doc.text(d.title, 50, y);
-      doc.text(`₹${Number(d.amount).toLocaleString("en-IN")}`, 400, y);
-      y += 18;
+    // Send response
+    res.writeHead(200, {
+      "Content-Length": pdfBuffer.length,
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename=SalarySlip-${Month}.pdf`,
     });
-
-    y += 20;
-
-    // ============================================================
-    // 📊 SUMMARY
-    // ============================================================
-
-    doc.font("Noto-Bold").fontSize(14).text("SUMMARY");
-    y = doc.y + 10;
-
-    doc.font("Noto").fontSize(12);
-    doc.text(`Total Earnings   : ₹${slip.totalEarnings.toLocaleString("en-IN")}`);
-    doc.text(`Total Deductions : ₹${slip.totalDeductions.toLocaleString("en-IN")}`);
-    doc.text(`Tax              : ₹${slip.TaxAmount.toLocaleString("en-IN")}`);
-    doc.text(`Gross Salary     : ₹${slip.grossSalary.toLocaleString("en-IN")}`);
-    doc.text(`Net Salary       : ₹${slip.netSalary.toLocaleString("en-IN")}`, {
-      underline: true,
-    });
-
-    doc.end();
+    res.end(pdfBuffer);
 
     // Save activity
     await RecentActivity.create({
       CompanyId: slip.CompanyId,
-      EmployeeId: toObjectId(EmployeeID),
-      action: `Downloaded salary slip for ${Month}`,
+      UserId: toObjectId(EmployeeID), // Changed from EmployeeId to match Schema usually (UserId)
+      ActivityType: "SalaryGeneration", // Or specific action logic
+      ActivityDescription: `Downloaded salary slip for ${Month}`
     });
 
   } catch (error) {
@@ -1266,8 +1301,91 @@ const updateSalarySlipRequest = async (req, res) => {
     });
   }
 };
+
+// -----------------------------
+// Export monthly salary as CSV
+// -----------------------------
+const exportMonthlySalaryCSV = async (req, res) => {
+  try {
+    const { CompanyId, Month } = req.body;
+    if (!CompanyId || !Month) {
+      return res.status(400).json({
+        success: false,
+        message: "CompanyId and Month are required"
+      });
+    }
+
+    const normalizedMonth = normalizeMonth(Month);
+    if (!normalizedMonth) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Month format"
+      });
+    }
+
+    // Fetch all salary slips for the month
+    const salarySlips = await SalarySlip.find({
+      CompanyId: toObjectId(CompanyId),
+      Month: normalizedMonth
+    }).populate({
+      path: "EmployeeID",
+      select: "Name Email DepartmentId DesignationId BankDetails",
+      populate: [
+        { path: "DepartmentId", select: "DepartmentName" },
+        { path: "DesignationId", select: "DesignationName" }
+      ]
+    });
+
+    if (!salarySlips || salarySlips.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No salary slips found for this month"
+      });
+    }
+
+    // Build CSV content
+    const csvHeaders = "Employee Name,Email,Department,Designation,Bank Name,Account Holder,Account Number,IFSC Code,Bank Branch,Gross Salary,Total Deductions,Tax Amount,Net Payable\n";
+
+    const csvRows = salarySlips.map(slip => {
+      const emp = slip.EmployeeID;
+      const bank = emp?.BankDetails || {};
+      return [
+        emp?.Name || "N/A",
+        emp?.Email || "N/A",
+        emp?.DepartmentId?.DepartmentName || "N/A",
+        emp?.DesignationId?.DesignationName || "N/A",
+        bank.BankName || "N/A",
+        bank.AccountHolderName || "N/A",
+        bank.AccountNumber || "N/A",
+        bank.IFSCCode || "N/A",
+        bank.BranchName || "N/A",
+        slip.grossSalary || 0,
+        slip.totalDeductions || 0,
+        slip.TaxAmount || 0,
+        slip.netSalary || 0
+      ].join(",");
+    }).join("\n");
+
+    const csvContent = csvHeaders + csvRows;
+
+    // Set headers for file download
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename="salary_report_${normalizedMonth}.csv"`);
+
+    return res.status(200).send(csvContent);
+  } catch (error) {
+    console.error("exportMonthlySalaryCSV error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message
+    });
+  }
+};
+
 export {
   calculateSalary,
+  previewSalary,
   getTotalSalaryDistribution,
   calculateSalaryForAll,
   getDepartmentWiseSalaryDistribution,
@@ -1278,5 +1396,6 @@ export {
   getPayrollByBranch,
   requestSalarySlip,
   getSalarySlipRequests,
-  updateSalarySlipRequest
+  updateSalarySlipRequest,
+  exportMonthlySalaryCSV
 };

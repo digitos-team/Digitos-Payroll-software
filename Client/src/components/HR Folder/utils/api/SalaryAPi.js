@@ -122,6 +122,38 @@ export const calculateSalaryDetailed = async (employeeId, month, overrideCompany
         };
     }
 }
+
+export const previewSalary = async (employeeId, month, overrideCompanyId = null) => {
+    const CompanyId = overrideCompanyId || getCompanyId();
+    try {
+        const response = await axiosInstance.post("/preview-salary", {
+            EmployeeID: employeeId,
+            CompanyId,
+            Month: month
+        });
+        return response.data;
+    } catch (error) {
+        console.error("previewSalary error:", error);
+        throw error;
+    }
+};
+
+export const exportMonthlySalaryCSV = async (month, overrideCompanyId = null) => {
+    const CompanyId = overrideCompanyId || getCompanyId();
+    try {
+        const response = await axiosInstance.post("/export-monthly-salary-csv", {
+            CompanyId,
+            Month: month
+        }, {
+            responseType: 'blob'
+        });
+        return response.data;
+    } catch (error) {
+        console.error("exportMonthlySalaryCSV error:", error);
+        throw error;
+    }
+};
+
 export const calculateSalaryForAll = async (month, overrideCompanyId = null) => {
     const CompanyId = overrideCompanyId || getCompanyId();
     try {

@@ -11,7 +11,7 @@ const getCompanyId = () => {
 // 1. Add Branch
 export const addBranch = async (data) => {
   const CompanyId = getCompanyId();
-  console.log("Adding branch for CompanyId:", CompanyId);
+
 
   return axiosInstance.post("/addbranch", {
     ...data,

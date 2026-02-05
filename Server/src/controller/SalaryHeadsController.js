@@ -4,7 +4,7 @@ import { SalaryHeads } from "../models/SalaryHeadsSchema.js";
 // ------------------ ADD SALARY HEAD ------------------
 let AddSalaryHeads = async (req, res) => {
   let reqData = req.body;
-  console.log("SalaryHeadsData", reqData);
+
 
   try {
     let result = await SalaryHeads.create(reqData);
@@ -13,7 +13,7 @@ let AddSalaryHeads = async (req, res) => {
       message: "Salary Head Added Successfully",
     });
   } catch (error) {
-    console.log(error);
+
     res.status(500).json({ message: "Failed to add salary head", error });
   }
 };

@@ -57,7 +57,7 @@ export const BranchProvider = ({ children }) => {
 
     try {
       const res = await getAllEmployees(actualCompanyId);
-      console.log("BranchContext loadEmployees res:", res);
+
 
       // Handle different response structures
       // HR EmployeeApi returns { data: users[] }
@@ -98,7 +98,7 @@ export const BranchProvider = ({ children }) => {
     try {
       const res = await getEmployeeCountByDepartment();
       const filteredData = res.data.filter(d => d.DepartmentId !== null);
-      console.log(filteredData)
+
       const data = filteredData || [];
       setEmployeeCountByDept(data);
     } catch (err) {

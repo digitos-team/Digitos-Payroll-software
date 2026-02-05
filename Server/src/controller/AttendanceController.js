@@ -1,5 +1,6 @@
 import { Attendance } from "../models/AttendanceSchema.js";
 import { User } from "../models/UserSchema.js";
+import { isDateLocked, isFutureDate } from "../config/attendanceConfig.js";
 
 // Mark Attendance (Single or Bulk)
 export const markAttendance = async (req, res) => {
@@ -7,29 +8,109 @@ export const markAttendance = async (req, res) => {
         const { CompanyId, Date: attDate, Employees, MarkedBy } = req.body;
         // Employees: [{ UserId, Status }]
 
+        // 1. Basic validation
         if (!CompanyId || !attDate || !Array.isArray(Employees)) {
             return res.status(400).json({ success: false, message: "Invalid payload" });
         }
 
-        const operations = Employees.map((emp) => ({
-            updateOne: {
-                filter: { CompanyId, UserId: emp.UserId, Date: attDate },
-                update: {
-                    $set: {
-                        Status: emp.Status,
-                        MarkedBy
-                    }
-                },
-                upsert: true,
-            },
-        }));
+        if (Employees.length === 0) {
+            return res.status(400).json({ success: false, message: "Employees array cannot be empty" });
+        }
 
+        // 2. Validate date format (YYYY-MM-DD)
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(attDate)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid date format. Expected YYYY-MM-DD"
+            });
+        }
+
+        // 3. Check if date is locked (past date that cannot be modified)
+        if (isDateLocked(attDate)) {
+            return res.status(403).json({
+                success: false,
+                message: `Cannot modify attendance for ${attDate}. This date has passed and is now locked.`,
+                code: "DATE_LOCKED"
+            });
+        }
+
+        // 4. Check if date is too far in the future
+        if (isFutureDate(attDate)) {
+            return res.status(403).json({
+                success: false,
+                message: `Cannot mark attendance for future date ${attDate}.`,
+                code: "FUTURE_DATE"
+            });
+        }
+
+        // 5. Validate all UserIds exist and belong to the company
+        const userIds = Employees.map(emp => emp.UserId);
+        const validUsers = await User.find({
+            _id: { $in: userIds },
+            CompanyId: CompanyId
+        }).select("_id");
+
+        const validUserIds = new Set(validUsers.map(u => String(u._id)));
+        const invalidUsers = userIds.filter(id => !validUserIds.has(String(id)));
+
+        if (invalidUsers.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Some users do not exist or do not belong to this company",
+                invalidUserIds: invalidUsers
+            });
+        }
+
+        // 6. Validate all statuses are valid enum values (or Unmarked)
+        const validStatuses = ["Present", "Absent", "PaidLeave", "UnpaidLeave", "HalfDay", "Unmarked"];
+        const invalidStatuses = Employees.filter(emp => !validStatuses.includes(emp.Status));
+
+        if (invalidStatuses.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid status values found",
+                validStatuses: validStatuses,
+                invalidEntries: invalidStatuses
+            });
+        }
+
+        // 7. Prepare bulk operations
+        const operations = Employees.map((emp) => {
+            if (emp.Status === "Unmarked") {
+                return {
+                    deleteOne: {
+                        filter: { CompanyId, UserId: emp.UserId, Date: attDate }
+                    }
+                };
+            }
+            return {
+                updateOne: {
+                    filter: { CompanyId, UserId: emp.UserId, Date: attDate },
+                    update: {
+                        $set: {
+                            Status: emp.Status,
+                            MarkedBy
+                        }
+                    },
+                    upsert: true,
+                },
+            };
+        });
+
+        // 8. Execute bulk write
         if (operations.length > 0) {
             await Attendance.bulkWrite(operations);
         }
 
-        res.status(200).json({ success: true, message: "Attendance marked successfully" });
+        res.status(200).json({
+            success: true,
+            message: "Attendance marked successfully",
+            date: attDate,
+            employeesUpdated: operations.length
+        });
     } catch (error) {
+        console.error("markAttendance error:", error);
         res.status(500).json({ success: false, error: error.message });
     }
 };
