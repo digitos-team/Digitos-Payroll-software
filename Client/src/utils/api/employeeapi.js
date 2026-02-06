@@ -209,10 +209,8 @@ export const updateEmployee = async (arg1, arg2) => {
 // -------------------- Delete Employee --------------------
 export const deleteEmployee = async (id) => {
   try {
-    const res = await axiosInstance.delete("/deleteuser", {
-      data: { id },
-    });
-    return res.data; // { message }
+    const res = await axiosInstance.delete(`/deleteuser/${id}`);
+    return res.data; // { success, message }
   } catch (err) {
     throw err.response?.data || err;
   }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { FiEdit, FiEye, FiSearch, FiBriefcase, FiUser } from "react-icons/fi";
-import { getAllEmployees, updateEmployee } from "../../../utils/api/employeeapi";
+import { FiEdit, FiEye, FiSearch, FiBriefcase, FiUser, FiTrash2 } from "react-icons/fi";
+import { getAllEmployees, updateEmployee, deleteEmployee } from "../../../utils/api/employeeapi";
 import EditUserModal from "../components/Modals/EditUserModal";
 import EmployeeDetailModal from "../components/Modals/EmployeeDetailModal";
 import { getAssetUrl } from "../../../utils/config";
@@ -55,6 +55,25 @@ const Employees = () => {
     } catch (error) {
       console.error("Update failed", error);
       alert("Failed to update employee");
+    }
+  };
+
+  const handleDeleteEmployee = async (emp) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${emp.Name}?\n\nThis action cannot be undone and will remove all associated data.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await deleteEmployee(emp._id || emp.id);
+      // Refresh list
+      fetchEmployees();
+      alert(`${emp.Name} has been deleted successfully`);
+    } catch (error) {
+      console.error("Delete failed", error);
+      const errorMsg = error.message || "Failed to delete employee";
+      alert(errorMsg);
     }
   };
 
@@ -192,6 +211,13 @@ const Employees = () => {
                           title="Edit Employee"
                         >
                           <FiEdit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteEmployee(emp)}
+                          className="text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 bg-gray-100 dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-gray-600 p-2 rounded-lg transition"
+                          title="Delete Employee"
+                        >
+                          <FiTrash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>

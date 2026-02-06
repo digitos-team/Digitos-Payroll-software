@@ -550,9 +550,9 @@ const Attendance = () => {
 
             {/* Tip */}
             <div className="mt-4 text-sm text-gray-500 text-center">
-                💡 Click on a cell to cycle: Absent → Present → Unpaid Leave → Paid Leave → Half Day → Unmarked
+                💡 Click on a cell to cycle: Present → Absent → Half Day → Paid Leave → Unpaid Leave → Unmarked
                 <br />
-                🔒 Dates older than 3 days are locked (72-hour grace period for night shifts)
+                🔒 Dates older than 3 days are locked (3-day grace period for small teams)
             </div>
         </div>
     );

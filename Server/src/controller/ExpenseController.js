@@ -48,16 +48,7 @@ const addExpense = async (req, res) => {
 
     await expense.save();
 
-    // Log activity
-    // await createRecentActivity({
-    //   CompanyId,
-    //   userId: req.user._id,
-    //   action: "Added Expense",
-    //   target: `Expense: ${ExpenseTitle}`,
-    // });
-
-    // ✅ REMOVED: Purchase creation logic
-    // Purchases are only created when order is confirmed/paid in OrderController
+    
 
     res.status(201).json({
       message: "Expense added successfully",
@@ -156,13 +147,7 @@ const updateExpense = async (req, res) => {
       { new: true }
     );
 
-    // Log activity
-    // await createRecentActivity({
-    //   CompanyId: updatedExpense.CompanyId,
-    //   userId: req.user._id,
-    //   action: "Updated Expense",
-    //   target: `Expense: ${updatedExpense.ExpenseTitle}`,
-    // });
+   
 
     res.status(200).json({
       message: "Expense updated successfully",
@@ -184,13 +169,6 @@ const deleteExpense = async (req, res) => {
       return res.status(404).json({ message: "Expense not found" });
     }
 
-    // Log activity
-    // await createRecentActivity({
-    //   CompanyId: expense.CompanyId,
-    //   userId: req.user._id,
-    //   action: "Deleted Expense",
-    //   target: `Expense: ${expense.ExpenseTitle}`,
-    // });
 
     res.status(200).json({ message: "Expense deleted successfully" });
   } catch (error) {

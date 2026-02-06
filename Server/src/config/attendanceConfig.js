@@ -10,10 +10,10 @@ export const ATTENDANCE_CONFIG = {
     MAX_FUTURE_DAYS: 0,
 
     // Allowed roles for marking/modifying attendance
-    ALLOWED_ROLES: ['HR', 'Admin', 'SuperAdmin'],
+    ALLOWED_ROLES: ['HR', 'Admin'],
 
     // Roles that can view all attendance reports
-    REPORT_VIEW_ROLES: ['HR', 'Admin', 'SuperAdmin', 'CA'],
+    REPORT_VIEW_ROLES: ['HR', 'Admin'],
 };
 
 /**
