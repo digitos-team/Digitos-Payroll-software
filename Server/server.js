@@ -10,7 +10,7 @@ import { Adminroutes } from "./src/routes/Adminroutes.js";
 import { Departmentroutes } from "./src/routes/Departmentroutes.js";
 import { DesignationRoutes } from "./src/routes/DesignationRoutes.js";
 import { Branchroutes } from "./src/routes/Branchroutes.js";
-import { UserRoutes } from "./src/routes/Userroutes.js";
+import { UserRoutes } from "./src/routes/UserRoutes.js";
 import { LoginRoutes } from "./src/routes/LoginRoutes.js";
 import { ExpenseRoutes } from "./src/routes/ExpenseRoutes.js";
 import { SalaryHeadsRoutes } from "./src/routes/SalaryHeadRoutes.js";
@@ -23,7 +23,7 @@ import SalarySettingRoutes from "./src/routes/SalarySettingRoutes.js";
 import { SalaryRoutes } from "./src/routes/SalaryRoutes.js";
 import { CsvRoutes } from "./src/routes/CsvRoutes.js";
 import { ExportRoutes } from "./src/routes/ExportRoutes.js";
-import { RecentActivitiesRoutes } from "./src/routes/RecentActivitesRoutes.js";
+import { RecentActivitiesRoutes } from "./src/routes/RecentActivitiesRoutes.js";
 import { PayrollHistoryRoutes } from "./src/routes/PayrollHistoryRoutes.js";
 import { TrendsRoutes } from "./src/routes/TrendsRoutes.js";
 import LeaveRoutes from "./src/routes/LeaveRoutes.js";
@@ -42,7 +42,17 @@ const __dirname = path.dirname(__filename);
 const Server = express();
 
 // ------------------ Middleware ------------------
-Server.use(cors());
+Server.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://localhost:3000",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    credentials: true,
+  })
+);
 Server.use(express.json({ strict: false }));
 Server.use(express.urlencoded({ extended: true }));
 
@@ -96,11 +106,12 @@ Server.use("/api", LeaveRoutes);
 
 // ------------------ Static Files ------------------
 Server.use("/uploads", express.static("uploads"));
-Server.use(express.static(path.join(__dirname, "frontend/build")));
+// Serve static files from the React app
+Server.use(express.static(path.join(__dirname, "../Client/dist")));
 
 // ------------------ React Router fallback ------------------
 Server.get(/^(?!\/api|\/uploads).*/, (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend/build", "index.html"));
+  res.sendFile(path.join(__dirname, "../Client/dist", "index.html"));
 });
 
 // ------------------ Error handler (LAST) ------------------
