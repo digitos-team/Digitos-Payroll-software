@@ -9,6 +9,7 @@ import {
   generateSalaryReportPDF,
   exportMonthlyPayrollPDF,
   exportOverallOrdersPDF,
+  exportThreeMonthSalaryReportPDF,
 } from "../controller/ExportController.js";
 
 import { authorizeRoles, verifyToken } from "../Middleware/authMiddleware.js";
@@ -63,17 +64,17 @@ ExportRoutes.get(
 
 // [FIXED] Added verifyToken and authorizeRoles here
 ExportRoutes.get(
-  "/generatesalaryreportpdf", 
-  verifyToken, 
-  authorizeRoles("Admin", "CA"), 
+  "/generatesalaryreportpdf",
+  verifyToken,
+  authorizeRoles("Admin", "CA"),
   generateSalaryReportPDF
 );
 
 // [FIXED] Added verifyToken and authorizeRoles here
 ExportRoutes.get(
-  "/export-monthly-pdf", 
-  verifyToken, 
-  authorizeRoles("Admin", "CA"), 
+  "/export-monthly-pdf",
+  verifyToken,
+  authorizeRoles("Admin", "CA"),
   exportMonthlyPayrollPDF
 );
 
@@ -82,6 +83,13 @@ ExportRoutes.get(
   verifyToken,
   authorizeRoles("Admin", "CA"),
   exportOverallOrdersPDF
+);
+
+ExportRoutes.get(
+  "/export-three-month-salary-pdf",
+  verifyToken,
+  authorizeRoles("Admin", "CA"),
+  exportThreeMonthSalaryReportPDF
 );
 
 export { ExportRoutes };

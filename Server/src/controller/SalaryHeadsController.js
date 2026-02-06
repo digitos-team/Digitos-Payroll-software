@@ -21,7 +21,7 @@ let AddSalaryHeads = async (req, res) => {
 // ------------------ FETCH SALARY HEADS BY COMPANY ------------------
 let FetchSalaryHeads = async (req, res) => {
   try {
-    let { CompanyId } = req.body;
+    let { CompanyId } = req.query.CompanyId ? req.query : req.body;
     let result = await SalaryHeads.find({ CompanyId });
     res.status(200).json({
       data: result,

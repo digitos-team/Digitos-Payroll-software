@@ -154,6 +154,30 @@ export const exportMonthlySalaryCSV = async (month, overrideCompanyId = null) =>
     }
 };
 
+export const exportThreeMonthSalaryPDF = async (month, year, overrideCompanyId = null, employeeId = null) => {
+    const CompanyId = overrideCompanyId || getCompanyId();
+    try {
+        const params = {
+            CompanyId,
+            month,
+            year
+        };
+
+        if (employeeId) {
+            params.EmployeeID = employeeId;
+        }
+
+        const response = await axiosInstance.get("/export-three-month-salary-pdf", {
+            params,
+            responseType: 'blob'
+        });
+        return response.data;
+    } catch (error) {
+        console.error("exportThreeMonthSalaryPDF error:", error);
+        throw error;
+    }
+};
+
 export const calculateSalaryForAll = async (month, overrideCompanyId = null) => {
     const CompanyId = overrideCompanyId || getCompanyId();
     try {

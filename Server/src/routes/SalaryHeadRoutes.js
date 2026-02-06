@@ -9,7 +9,7 @@ let SalaryHeadsRoutes = express.Router()
 
 
 SalaryHeadsRoutes.post("/addsalaryheads", AddSalaryHeads)
-SalaryHeadsRoutes.post("/fetchsalaryhead", FetchSalaryHeads)
+SalaryHeadsRoutes.get("/getsalaryheads", FetchSalaryHeads)
 SalaryHeadsRoutes.delete("/deletesalaryhead", DeleteSalaryHead)
 
-export {SalaryHeadsRoutes}
+export { SalaryHeadsRoutes }

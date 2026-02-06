@@ -23,7 +23,8 @@ import {
     getSalarySettings,
     generatePayslipPDF,
     getTotalSalaryDistribution,
-    deleteSalarySetting
+    deleteSalarySetting,
+    exportThreeMonthSalaryPDF
 } from '../../HR Folder/utils/api/SalaryAPi';
 import { getAllEmployees } from '../../HR Folder/utils/api/EmployeeApi';
 
@@ -227,6 +228,29 @@ export default function AdminSalarySettings() {
         }
     };
 
+    const handleDownloadThreeMonthForEmployee = async (employeeId, employeeName) => {
+        if (!selectedMonth) {
+            alert('Please select a month first');
+            return;
+        }
+        try {
+            const [year, month] = selectedMonth.split('-');
+            const blob = await exportThreeMonthSalaryPDF(month, year, targetCompanyId, employeeId);
+            const url = window.URL.createObjectURL(new Blob([blob]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `${employeeName}_3month_${selectedMonth}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Failed to export 3-month PDF:', error);
+            alert('Failed to export PDF: ' + (error?.response?.data?.message || error?.message || 'Error occurred'));
+        }
+    };
+
+
     const handleConfigureClick = (employee) => {
         setSelectedEmployee(employee);
         setIsConfigureModalOpen(true);
@@ -312,6 +336,27 @@ export default function AdminSalarySettings() {
         }
     };
 
+    const handleExportThreeMonth = async () => {
+        if (!selectedMonth) {
+            alert('Please select a month first');
+            return;
+        }
+        try {
+            const [year, month] = selectedMonth.split('-');
+            const blob = await exportThreeMonthSalaryPDF(month, year, targetCompanyId);
+            const url = window.URL.createObjectURL(new Blob([blob]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `salary_report_3month_${selectedMonth}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Failed to export 3-month PDF:', error);
+            alert('Failed to export PDF: ' + (error?.response?.data?.message || error?.message || 'Error occurred'));
+        }
+    };
 
     const handleAddSalaryHead = async (data) => {
         try {
@@ -729,6 +774,13 @@ export default function AdminSalarySettings() {
                                                             >
                                                                 <MdDownload />
                                                                 Download PDF
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDownloadThreeMonthForEmployee(emp._id, emp.Name)}
+                                                                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded text-sm hover:bg-purple-700"
+                                                            >
+                                                                <MdDownload />
+                                                                3-Month Report
                                                             </button>
                                                         </div>
                                                     </div>

@@ -17,6 +17,10 @@ import { Order } from "../models/OrderSchema.js";
 import { SalarySlip } from "../models/SalaryCalculateSchema.js";
 import { User } from "../models/UserSchema.js";
 import { RecentActivity } from "../models/RecentActivitySchema.js";
+import puppeteer from "puppeteer";
+import threeMonthSalarySlipHtml from "../templates/threeMonthSalarySlipHtml.js";
+import { convertNumberToWords } from "../utils/numberToWords.js";
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -1258,6 +1262,218 @@ export const exportOverallOrdersPDF = async (req, res) => {
   }
 };
 
+// -------------------- 3 Month Salary Report --------------------
+export const exportThreeMonthSalaryReportPDF = async (req, res) => {
+  try {
+    const { month, year, CompanyId, EmployeeID } = req.query;
+
+    if (!month || !year) {
+      return res.status(400).json({ message: "month and year required" });
+    }
+
+    if (!CompanyId) {
+      return res.status(400).json({ success: false, message: "CompanyId required" });
+    }
+
+    // Calculate the 3 months (Selected, Selected-1, Selected-2)
+    const yearNum = parseInt(year);
+    const monthNum = parseInt(month);
+    const months = [];
+    const formattedMonths = [];
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    for (let i = 0; i < 3; i++) {
+      const d = new Date(yearNum, monthNum - 1 - i, 1);
+      const mStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const fStr = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+      months.unshift(mStr); // [Oldest, Middle, Newest]
+      formattedMonths.unshift(fStr);
+    }
+
+    const query = {
+      CompanyId: new mongoose.Types.ObjectId(CompanyId),
+      Month: { $in: months }
+    };
+
+    // If EmployeeID is provided, filter for that employee only
+    if (EmployeeID) {
+      query.EmployeeID = new mongoose.Types.ObjectId(EmployeeID);
+    }
+
+    const slips = await SalarySlip.find(query)
+      .populate({
+        path: "EmployeeID",
+        select: "Name Email EmployeeCode DepartmentId Designation BankDetails",
+        populate: [
+          { path: "DesignationId", select: "DesignationName" },
+          { path: "DepartmentId", select: "DepartmentName" }
+        ]
+      })
+      .lean();
+
+    if (!slips.length) {
+      return res.status(404).json({ success: false, message: "No salary data found for these months" });
+    }
+
+    // Group by Employee (should only be one if EmployeeID is provided)
+    const employeeData = {};
+    const allEarningsHeads = new Set();
+    const allDeductionsHeads = new Set();
+
+    slips.forEach(slip => {
+      if (!slip.EmployeeID) return;
+      const empId = slip.EmployeeID._id.toString();
+      if (!employeeData[empId]) {
+        employeeData[empId] = {
+          info: slip.EmployeeID,
+          slips: {}
+        };
+      }
+      employeeData[empId].slips[slip.Month] = slip;
+
+      slip.Earnings?.forEach(e => allEarningsHeads.add(e.title));
+      slip.Deductions?.forEach(d => allDeductionsHeads.add(d.title));
+    });
+
+    const sortedEarnings = Array.from(allEarningsHeads).sort();
+    const sortedDeductions = Array.from(allDeductionsHeads).sort();
+
+    // Get the first (and likely only) employee
+    const empData = Object.values(employeeData)[0];
+    const { info, slips: empSlips } = empData;
+
+    const emp = info || {};
+    const empName = emp.Name || emp.EmployeeName || "Unknown Employee";
+    const empDesignation = emp.DesignationId?.DesignationName || emp.Designation || "N/A";
+    const empDepartment = emp.DepartmentId?.DepartmentName || "N/A";
+    const bankDetails = emp.BankDetails || {};
+
+    // Read letterhead image
+    const letterheadPath = path.join(process.cwd(), "logo", "custom_letterhead.png");
+    let letterheadBase64 = null;
+    if (fs.existsSync(letterheadPath)) {
+      const imageBuffer = fs.readFileSync(letterheadPath);
+      letterheadBase64 = `data:image/png;base64,${imageBuffer.toString('base64')}`;
+    }
+
+    // Prepare earnings data
+    const earningsData = sortedEarnings.map(head => {
+      const amounts = [];
+      let total = 0;
+      months.forEach(m => {
+        const slip = empSlips[m];
+        const item = slip?.Earnings?.find(e => e.title === head);
+        const amt = item?.amount || 0;
+        amounts.push(amt);
+        total += amt;
+      });
+      return { title: head, amounts, total };
+    });
+
+    // Prepare deductions data
+    const deductionsData = sortedDeductions.map(head => {
+      const amounts = [];
+      let total = 0;
+      months.forEach(m => {
+        const slip = empSlips[m];
+        const item = slip?.Deductions?.find(d => d.title === head);
+        const amt = item?.amount || 0;
+        amounts.push(amt);
+        total += amt;
+      });
+      return { title: head, amounts, total };
+    });
+
+    // Calculate totals
+    const totalEarnings = [0, 0, 0, 0]; // [m1, m2, m3, total]
+    const totalDeductions = [0, 0, 0, 0];
+    const netSalary = [0, 0, 0, 0];
+
+    months.forEach((m, idx) => {
+      const slip = empSlips[m];
+      totalEarnings[idx] = slip?.totalEarnings || 0;
+      totalDeductions[idx] = slip?.totalDeductions || 0;
+      netSalary[idx] = slip?.netSalary || 0;
+    });
+
+    totalEarnings[3] = totalEarnings[0] + totalEarnings[1] + totalEarnings[2];
+    totalDeductions[3] = totalDeductions[0] + totalDeductions[1] + totalDeductions[2];
+    netSalary[3] = netSalary[0] + netSalary[1] + netSalary[2];
+
+    // Prepare data for template
+    const slipData = {
+      letterhead: letterheadBase64,
+      company: {
+        name: "Digitos It Solutions Pvt Ltd",
+        address: "Hudco Colony, Chhatrapati Sambhajinagar, Maharashtra",
+        email: "info@digitositsolutions.com",
+        phone: "+91 98765 43210"
+      },
+      employee: {
+        name: empName,
+        id: emp.EmployeeCode || "N/A",
+        designation: empDesignation,
+        department: empDepartment,
+        bankName: bankDetails.BankName,
+        accountNumber: bankDetails.AccountNumber,
+        ifsc: bankDetails.IFSCCode || "N/A",
+        branch: bankDetails.BranchName || "N/A"
+      },
+      months: months,
+      formattedMonths: formattedMonths,
+      earnings: earningsData,
+      deductions: deductionsData,
+      totals: {
+        earnings: totalEarnings,
+        deductions: totalDeductions
+      },
+      netSalary: netSalary,
+      amountInWords: convertNumberToWords(Math.round(netSalary[3]))
+    };
+
+    const htmlContent = threeMonthSalarySlipHtml(slipData);
+
+    // Generate PDF with Puppeteer
+    const browser = await puppeteer.launch({
+      headless: 'new',
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+    const page = await browser.newPage();
+
+    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+
+    // Create PDF buffer
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: 'none'
+    });
+
+    await browser.close();
+
+    // Send response
+    res.writeHead(200, {
+      "Content-Length": pdfBuffer.length,
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename=SalaryReport_3Months_${empName.replace(/\s+/g, '_')}.pdf`,
+    });
+    res.end(pdfBuffer);
+
+    // Log activity
+    await RecentActivity.create({
+      CompanyId: new mongoose.Types.ObjectId(CompanyId),
+      userId: req.user?._id || null,
+      action: `Downloaded 3-Month Salary Report (${months.join(", ")})${EmployeeID ? ' for ' + empName : ''}`,
+      target: "Reports",
+      isEmailSent: false,
+    });
+
+  } catch (error) {
+    console.error("exportThreeMonthSalaryReportPDF:", error);
+    res.status(500).json({ message: "Error generating PDF", error: error.message });
+  }
+};
+
 export default {
   exportMonthlyRevenuePDF,
   exportMonthlyExpensesPDF,
@@ -1268,4 +1484,5 @@ export default {
   generateSalaryReportPDF,
   exportMonthlyPayrollPDF,
   exportOverallOrdersPDF,
+  exportThreeMonthSalaryReportPDF,
 };
