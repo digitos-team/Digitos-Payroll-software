@@ -2,6 +2,7 @@
 const threeMonthSalarySlipHtml = (data) => {
     const {
         letterhead,
+        letterheadFooter,
         company,
         employee,
         months,
@@ -42,11 +43,13 @@ const threeMonthSalarySlipHtml = (data) => {
           color: #1f2937;
           box-sizing: border-box;
           font-size: 10px; /* Slightly smaller font for portrait tables */
-          position: relative;
+          min-height: 100vh;
+          /* Removed position: relative to allow absolute positioning relative to page */
+          /* Removed flexbox */
           ${hasLetterhead ? `
-          padding: 150px 50px 50px 50px; /* Reduced top padding to move content up */
+          padding: 150px 50px 100px 50px; /* Increased bottom padding to prevent overlap */
           ` : `
-          padding: 40px;
+          padding: 40px 40px 100px 40px;
           `}
       }
       /* Background Header - Fixed to Page 1 */
@@ -296,6 +299,24 @@ const threeMonthSalarySlipHtml = (data) => {
           text-transform: uppercase;
           letter-spacing: 0.5px;
       }
+
+      /* Footer image positioning - only on last page */
+      .footer-image-container {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          text-align: center;
+          page-break-before: auto;
+          z-index: 20;
+      }
+
+      .footer-image-container img {
+          width: 100%;
+          max-width: 100%;
+          height: auto;
+          display: block;
+      }
   </style>
 </head>
 <body>
@@ -473,6 +494,13 @@ const threeMonthSalarySlipHtml = (data) => {
     <div class="footer">
         <p>This is a system-generated 3-month salary statement and does not require a physical signature.</p>
         <p>Generated on ${new Date().toLocaleDateString('en-IN')}</p>
+    </div>
+    ` : ''}
+
+    <!-- Footer Image (if provided) -->
+    ${letterheadFooter ? `
+    <div class="footer-image-container">
+        <img src="${letterheadFooter}" alt="Footer" />
     </div>
     ` : ''}
   </div>

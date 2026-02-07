@@ -948,6 +948,14 @@ const generateSalarySlipPDF = async (req, res) => {
       letterheadBase64 = `data:image/png;base64,${imageBuffer.toString('base64')}`;
     }
 
+    // Read footer image
+    const footerPath = path.join(process.cwd(), "..", "Client", "src", "assets", "letterhead-footer.png");
+    let footerBase64 = null;
+    if (fs.existsSync(footerPath)) {
+      const footerBuffer = fs.readFileSync(footerPath);
+      footerBase64 = `data:image/png;base64,${footerBuffer.toString('base64')}`;
+    }
+
     const slipData = {
       letterhead: letterheadBase64,
       company: {
@@ -956,6 +964,7 @@ const generateSalarySlipPDF = async (req, res) => {
         email: "info@digitositsolutions.com",
         phone: "+91 98765 43210"
       },
+      letterheadFooter: footerBase64,
       employee: {
         name: empName,
         id: emp.EmployeeCode || "N/A",

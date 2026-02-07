@@ -1356,6 +1356,14 @@ export const exportThreeMonthSalaryReportPDF = async (req, res) => {
       letterheadBase64 = `data:image/png;base64,${imageBuffer.toString('base64')}`;
     }
 
+    // Read footer image
+    const footerPath = path.join(process.cwd(), "..", "Client", "src", "assets", "letterhead-footer.png");
+    let footerBase64 = null;
+    if (fs.existsSync(footerPath)) {
+      const footerBuffer = fs.readFileSync(footerPath);
+      footerBase64 = `data:image/png;base64,${footerBuffer.toString('base64')}`;
+    }
+
     // Prepare earnings data
     const earningsData = sortedEarnings.map(head => {
       const amounts = [];
@@ -1403,6 +1411,7 @@ export const exportThreeMonthSalaryReportPDF = async (req, res) => {
     // Prepare data for template
     const slipData = {
       letterhead: letterheadBase64,
+      letterheadFooter: footerBase64,
       company: {
         name: "Digitos It Solutions Pvt Ltd",
         address: "Hudco Colony, Chhatrapati Sambhajinagar, Maharashtra",

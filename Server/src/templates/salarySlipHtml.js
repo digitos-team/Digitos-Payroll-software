@@ -9,7 +9,8 @@ const salarySlipHtml = (data) => {
         deductions,
         totals,
         netSalary,
-        amountInWords
+        amountInWords,
+        letterheadFooter
     } = data;
 
     // Yellow theme matched to letterhead (Pale shade)
@@ -45,11 +46,12 @@ const salarySlipHtml = (data) => {
           color: #1f2937;
           box-sizing: border-box;
           font-size: 12px;
+          min-height: 100vh;
           position: relative;
           ${hasLetterhead ? `
-          padding: 130px 50px 50px 50px; 
+          padding: 130px 50px 100px 50px; 
           ` : `
-          padding: 40px;
+          padding: 40px 40px 100px 40px;
           `}
       }
 
@@ -245,6 +247,22 @@ const salarySlipHtml = (data) => {
       /* Utility */
       .text-right { text-align: right; }
       .w-50 { width: 50%; vertical-align: top; }
+      /* Footer image positioning - Absolute Bottom */
+      .footer-image-container {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          text-align: center;
+          z-index: 20;
+      }
+
+      .footer-image-container img {
+          width: 100%;
+          max-width: 100%;
+          height: auto;
+          display: block;
+      }
   </style>
 </head>
 <body>
@@ -367,9 +385,13 @@ const salarySlipHtml = (data) => {
 
     <!-- Footer only if NO letterhead -->
     ${!hasLetterhead ? `
-    <div class="footer">
-        <p>This is a system-generated payslip and does not require a physical signature.</p>
-        <p>Generated on ${new Date().toLocaleDateString('en-IN')}</p>
+    </div>
+    ` : ''}
+
+    <!-- Footer Image (Absolute Bottom) -->
+    ${letterheadFooter ? `
+    <div class="footer-image-container">
+        <img src="${letterheadFooter}" alt="Footer" />
     </div>
     ` : ''}
   </div>
