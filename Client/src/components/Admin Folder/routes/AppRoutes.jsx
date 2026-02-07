@@ -50,11 +50,11 @@ import HRAttendance from "../../HR Folder/pages/Attendance";
 import HRLeaveRequests from "../../HR Folder/pages/LeaveRequests";
 
 // Employee Imports
-import EmployeeDashboard from "../../employee/EmployeeDashboard";
-import Profile from "../../employee/Profile";
-import Salary from "../../employee/Salary";
-import EmployeeLeaves from "../../employee/Leaves";
-import EmployeeAttendance from "../../employee/EmployeeAttendance";
+import EmployeeDashboard from "../../Employee/EmployeeDashboard";
+import Profile from "../../Employee/Profile";
+import Salary from "../../Employee/Salary";
+import EmployeeLeaves from "../../Employee/Leaves";
+import EmployeeAttendance from "../../Employee/EmployeeAttendance";
 
 // Login
 import Login from "../pages/LoginPage";
