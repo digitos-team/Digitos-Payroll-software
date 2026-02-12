@@ -2,14 +2,19 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-const uploadDir = "uploads";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const uploadDir = path.join(__dirname, "../../uploads");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 let imageStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads");
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     const uniqueName = `${Date.now()}-${file.originalname}`;
@@ -48,6 +53,14 @@ export const acceptAnyFile = (req, res, next) => {
 
     // If multer populated req.files, normalize first file to req.file for compatibility
     if (req.files && req.files.length) {
+      const serverRoot = path.join(__dirname, "../../");
+
+      // Fix paths to be relative to server root (e.g., "uploads\file.png")
+      // This ensures that even though we save using absolute paths, the DB stores relative paths
+      req.files.forEach(f => {
+        f.path = path.relative(serverRoot, f.path);
+      });
+
       // Build a mapping like multer.fields would provide: req.filesByField and also set req.files[fieldName]
       const filesByField = {};
       for (const f of req.files) {

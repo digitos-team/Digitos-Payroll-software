@@ -29,7 +29,7 @@ const loginUser = async (req, res) => {
       }
     }
 
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(401).json({ message: "Invalid credentials" });
 
     // Step 3: Compare passwords
     const isMatch = await bcrypt.compare(
@@ -48,19 +48,19 @@ const loginUser = async (req, res) => {
     );
 
     // Step 5: Send response
-   // Step 5: Send response
-res.status(200).json({
-  message: "Login successful",
-  token,
-  role,
-  user: {
-    id: user._id,
-    name: source === "company" ? user.AdminName : user.Name,
-    email: source === "company" ? user.AdminEmail : user.Email,
-    companyId: source === "user" ? user.CompanyId?._id : user._id, // ✅ For HR/CA: their CompanyId, For Admin: their own ID
-    companyName: source === "user" ? user.CompanyId?.CompanyName : user.CompanyName,
-  },
-});
+    // Step 5: Send response
+    res.status(200).json({
+      message: "Login successful",
+      token,
+      role,
+      user: {
+        id: user._id,
+        name: source === "company" ? user.AdminName : user.Name,
+        email: source === "company" ? user.AdminEmail : user.Email,
+        companyId: source === "user" ? user.CompanyId?._id : user._id, // ✅ For HR/CA: their CompanyId, For Admin: their own ID
+        companyName: source === "user" ? user.CompanyId?.CompanyName : user.CompanyName,
+      },
+    });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Server error", error: error.message });

@@ -4,6 +4,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import multer from "multer";
+import fs from "fs";
 
 // Routes
 import { Adminroutes } from "./src/routes/Adminroutes.js";
@@ -62,6 +63,10 @@ Server.use((req, res, next) => {
   next();
 });
 
+Server.get("/ping", (req, res) => {
+  res.json({ message: "pong", time: new Date().toISOString(), pid: process.pid });
+});
+
 // ------------------ DB ------------------
 connectToDatabase();
 
@@ -105,13 +110,33 @@ Server.use("/api", AttendanceRoutes);
 Server.use("/api", LeaveRoutes);
 
 // ------------------ Static Files ------------------
-Server.use("/uploads", express.static("uploads"));
-// Serve static files from the React app
-Server.use(express.static(path.join(__dirname, "../Client/dist")));
+const UPLOADS_PATH = path.resolve(__dirname, "uploads");
+const CLIENT_DIST_PATH = path.resolve(__dirname, "../Client/dist");
+
+console.log(`[Config] Serving uploads from: ${UPLOADS_PATH}`);
+console.log(`[Config] Serving client from: ${CLIENT_DIST_PATH}`);
+
+Server.use("/uploads", (req, res, next) => {
+  // Debug logging
+  const filePath = path.join(UPLOADS_PATH, req.path);
+  if (!fs.existsSync(filePath)) {
+    console.log(`[Warning] Upload file not found: ${req.path} (mapped to ${filePath})`);
+  }
+  next();
+});
+
+Server.use("/uploads", express.static(UPLOADS_PATH));
+Server.use(express.static(CLIENT_DIST_PATH));
+
+// ------------------ API/Uploads 404 (Prevent Fallback) ------------------
+// If anything under /api or /uploads reaches here, it's a 404, NOT an app route
+Server.use(["/api", "/uploads"], (req, res) => {
+  res.status(404).json({ success: false, message: "Resource not found" });
+});
 
 // ------------------ React Router fallback ------------------
-Server.get(/^(?!\/api|\/uploads).*/, (req, res) => {
-  res.sendFile(path.join(__dirname, "../Client/dist", "index.html"));
+Server.get(/.*/, (req, res) => {
+  res.sendFile(path.join(CLIENT_DIST_PATH, "index.html"));
 });
 
 // ------------------ Error handler (LAST) ------------------

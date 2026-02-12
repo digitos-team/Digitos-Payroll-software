@@ -237,7 +237,7 @@ export default function HRSettings() {
                                                 <div className="flex-shrink-0">
                                                     {hrUserData.ProfilePhoto ? (
                                                         <img
-                                                            src={hrUserData.ProfilePhoto}
+                                                            src={getAssetUrl(hrUserData.ProfilePhoto)}
                                                             alt={hrUserData.Name}
                                                             className="w-32 h-32 rounded-full object-cover border-4 border-gray-100 dark:border-gray-700 shadow-lg"
                                                         />

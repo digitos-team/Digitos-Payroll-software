@@ -150,8 +150,8 @@ const updateCompany = async (req, res) => {
     // ----------- Fields NOT allowed to update -----------
     const blockedFields = [
       // "AdminEmail", // Allowed now
-      "CompanyEmail",
-      "AdminPassword",
+      // "CompanyEmail", // Allowed now
+      // "AdminPassword", // Allowed now
       "_id",
       "role",
     ];
@@ -173,11 +173,10 @@ const updateCompany = async (req, res) => {
       }
     }
 
-    // ----------- If AdminPassword update request comes -> deny -----------
-    if (req.body.AdminPassword) {
-      return res.status(400).json({
-        message: "Password cannot be updated from this endpoint",
-      });
+    // ----------- If AdminPassword update request comes -> Hash it -----------
+    if (updates.AdminPassword) {
+      const salt = await bcrypt.genSalt(10);
+      updates.AdminPassword = await bcrypt.hash(updates.AdminPassword, salt);
     }
 
     // ----------- Find existing company -----------

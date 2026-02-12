@@ -3,7 +3,7 @@ async function connectToDatabase() {
   try {
     let PayrollDB = process.env.MONGO_URI;
     let connection = await mongoose.connect(PayrollDB);
-    console.log("DataBase Connected", connection.connection.name);
+    console.log(`🚀 DataBase Connected to: "${connection.connection.name}"`);
   } catch (error) {
     console.log(error);
   }

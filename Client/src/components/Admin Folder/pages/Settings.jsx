@@ -66,11 +66,17 @@ export default function Settings() {
         AdminEmail: admin.AdminEmail,
         AdminPhone: admin.AdminPhone,
         CompanyPhone: admin.CompanyPhone,
+        CompanyEmail: admin.CompanyEmail,
         CompanyAddress: admin.CompanyAddress,
         CompanyCity: admin.CompanyCity,
         CompanyState: admin.CompanyState,
         CompanyPincode: admin.CompanyPincode,
       };
+
+      // Add AdminPassword to updates if provided
+      if (admin.Password) {
+        updates.AdminPassword = admin.Password;
+      }
 
       const response = await updateCompany(actualCompanyId, updates);
 
@@ -273,6 +279,7 @@ export default function Settings() {
                   value={admin.Password}
                   onChange={handleChange}
                   placeholder="********"
+                  autoComplete="new-password"
                   className="w-full border rounded px-3 py-2 pr-32"
                 />
 

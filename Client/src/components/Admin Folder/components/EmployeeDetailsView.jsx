@@ -5,6 +5,8 @@ import { getAssetUrl } from '../../../utils/config';
 const EmployeeDetailsView = ({ employee, onClose }) => {
     if (!employee) return null;
 
+    console.log("Employee Documents:", employee.Documents);
+
     const formatDate = (dateString) => {
         if (!dateString) return null;
         return new Date(dateString).toLocaleDateString('en-IN', {
@@ -13,12 +15,12 @@ const EmployeeDetailsView = ({ employee, onClose }) => {
     };
 
     const getFileUrl = (path) => {
-        if (!path) return "";
+        if (!path) return null;
         if (typeof path !== 'string') {
             // Handle case where path is an object (e.g. from mongoose or file upload)
-            if (path.path) return getAssetUrl(path.path);
+            if (path.filepath) return getAssetUrl(path.filepath); // Changed from path.path to path.filepath
             if (path.url) return path.url;
-            return "";
+            return null;
         }
         return getAssetUrl(path);
     };
@@ -48,7 +50,7 @@ const EmployeeDetailsView = ({ employee, onClose }) => {
                     <div>
                         <h2 className="text-2xl font-bold">{employee.Name}</h2>
                         <p className="opacity-90 flex items-center gap-2 text-sm mt-1">
-                            {employee.role} • {employee.EmployeeType || 'N/A'} • {typeof employee.BranchId === 'object' ? employee.BranchId?.BranchName : 'Unknown Branch'}
+                            {employee.role} • {employee.EmployeeType || 'N/A'} • {typeof employee.BranchId === 'object' ? employee.BranchId?.BranchName : ''}
                         </p>
                         <div className="flex gap-2 mt-3">
                             <span className="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-md">
@@ -186,11 +188,16 @@ const DetailRow = ({ label, value }) => (
 
 const DocLink = ({ label, path, getUrl }) => {
     if (!path) return null;
+
+    const finalUrl = getUrl(path);
+
+    if (!finalUrl) return null; // Add this check
+
     return (
         <div className="flex justify-between items-center text-sm p-2 bg-gray-50 dark:bg-gray-700 rounded mb-1">
             <span className="text-gray-600 dark:text-gray-300 font-medium">{label}</span>
             <a
-                href={getUrl(path)}
+                href={finalUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="text-blue-600 dark:text-blue-400 hover:underline text-xs flex items-center gap-1"
